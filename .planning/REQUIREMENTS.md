@@ -112,20 +112,20 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENV-01 to ENV-04 | Phase 1 | Pending |
-| DATA-01 to DATA-06 | Phase 1 | Pending |
-| FEAT-01 to FEAT-09 | Phase 2 | Pending |
-| GRAPH-01 to GRAPH-09 | Phase 3 | Pending |
-| MODEL-01 to MODEL-09 | Phase 4 | Pending |
-| SCORE-01 to SCORE-04 | Phase 5 | Pending |
-| LEARN-01 to LEARN-06 | Phase 5 | Pending |
-| UI-01 to UI-07 | Phase 6 | Pending |
+| ENV-01 to ENV-04 | Phase 1: Foundation | Pending |
+| DATA-01 to DATA-06 | Phase 1: Foundation | Pending |
+| FEAT-01 to FEAT-09 | Phase 2: Feature Engineering | Pending |
+| GRAPH-01 to GRAPH-09 | Phase 3: Graph Construction | Pending |
+| MODEL-01 to MODEL-09 | Phase 4: Model Training | Pending |
+| SCORE-01 to SCORE-04 | Phase 5: Scoring and Active Learning | Pending |
+| LEARN-01 to LEARN-06 | Phase 5: Scoring and Active Learning | Pending |
+| UI-01 to UI-07 | Phase 6: Streamlit UI | Pending |
 
 **Coverage:**
-- v1 requirements: 48 total
-- Mapped to phases: 48
+- v1 requirements: 54 total (ENV: 4, DATA: 6, FEAT: 9, GRAPH: 9, MODEL: 9, SCORE: 4, LEARN: 6, UI: 7)
+- Mapped to phases: 54
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-11 after initial definition*
+*Last updated: 2026-03-11 after roadmap creation (corrected requirement count to 54)*
