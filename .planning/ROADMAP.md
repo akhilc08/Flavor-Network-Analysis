@@ -61,7 +61,13 @@ Plans:
   3. The validation gate blocks execution with a clear error message if node/edge thresholds are not met
   4. An assertion confirms zero overlap between test edge labels and the message-passing edge_index before training is permitted
   5. `ingredient_id_to_idx` and `molecule_id_to_idx` dicts are saved alongside the graph for downstream use
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Test stubs for all GRAPH requirements (Wave 0)
+- [ ] 03-02-PLAN.md — Node feature construction (index dicts, ingredient.x, molecule.x)
+- [ ] 03-03-PLAN.md — Edge construction (contains, co-occurs, structurally-similar)
+- [ ] 03-04-PLAN.md — Graph assembly, validation gate, link prediction split, save
 
 ### Phase 4: Model Training
 **Goal**: A trained GAT checkpoint exists that achieves validation AUC >= 0.70, with 128-dim ingredient embeddings exported and ready for scoring.
