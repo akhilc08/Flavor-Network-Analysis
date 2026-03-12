@@ -164,22 +164,14 @@ def test_structural_edges():
 
 
 def test_validation_gate():
-    """GRAPH-07: run_validation_gate raises ValueError on a minimal/empty graph."""
-    try:
-        from graph.build_graph import run_validation_gate  # noqa: PLC0415
-    except ImportError as exc:
-        pytest.skip(f"graph.build_graph not yet implemented: {exc}")
-
-    try:
-        from torch_geometric.data import HeteroData  # noqa: PLC0415
-    except ImportError as exc:
-        pytest.skip(f"torch_geometric not available: {exc}")
-
-    # Minimal graph with only 10 ingredient nodes and no edges
+    """GRAPH-07: validation gate raises ValueError when thresholds not met."""
+    from graph.build_graph import run_validation_gate  # noqa: PLC0415
+    from torch_geometric.data import HeteroData  # noqa: PLC0415
+    import torch  # noqa: PLC0415
     data = HeteroData()
-    data["ingredient"].num_nodes = 10
-
-    with pytest.raises(ValueError):
+    data['ingredient'].num_nodes = 10  # below 500 threshold
+    # No edges — will also fail edge type checks
+    with pytest.raises(ValueError, match="validation gate failed"):
         run_validation_gate(data)
 
 
