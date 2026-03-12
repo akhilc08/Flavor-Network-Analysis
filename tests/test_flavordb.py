@@ -15,7 +15,6 @@ INGREDIENTS_CSV = PROJECT_ROOT / "data" / "raw" / "ingredients.csv"
 CACHE_DB = PROJECT_ROOT / "data" / "raw" / "flavordb_cache.sqlite"
 
 
-@pytest.mark.skip(reason="FlavorDB2 scraper not yet run — execute Plan 01-02 first")
 def test_cache_populated():
     """Verify that the FlavorDB2 SQLite cache has been populated.
 
@@ -43,7 +42,6 @@ def test_cache_populated():
     )
 
 
-@pytest.mark.skip(reason="FlavorDB2 scraper not yet run — execute Plan 01-02 first")
 def test_ingredients_schema():
     """Verify that ingredients.csv has the required columns.
 
