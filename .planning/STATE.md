@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md (conftest.py fixture + 9 xfail test stubs, pytest exits 0)
-last_updated: "2026-03-12T18:04:47.807Z"
+stopped_at: Completed 04-04-PLAN.md (train_gat.py training script + 2 tests green)
+last_updated: "2026-03-12T18:14:16.379Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 25
-  completed_plans: 15
+  completed_plans: 16
   percent: 36
 ---
 
@@ -64,6 +64,7 @@ Progress: [████░░░░░░] 36%
 | Phase 04-model-training P03 | 10 | 1 tasks | 4 files |
 | Phase 04-model-training P02 | 7 | 1 tasks | 2 files |
 | Phase 04-model-training P01 | 6 | 2 tasks | 2 files |
+| Phase 04-model-training P04 | 15 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,9 @@ Recent decisions affecting current work:
 - [Phase 04-02]: GATConv out_channels = hidden_channels // heads — prevents concat=True dimension explosion (post-concat dim equals hidden_channels)
 - [Phase 04-model-training]: scope='module' on tiny_hetero_graph fixture: avoids repeated tensor creation overhead across 9 tests
 - [Phase 04-model-training]: xfail(strict=False) over skip in test stubs: xpass counts as green so tests naturally promote as implementation is added
+- [Phase 04-04]: train_gat.py adds project root to sys.path so python model/train_gat.py works without PYTHONPATH
+- [Phase 04-04]: save_checkpoint_if_improved wraps conditional and returns bool — test API was authoritative over plan Task 2 code sample
+- [Phase 04-04]: CPU-first embedding export: model.to('cpu') before forward pass prevents MPS double-spike OOM during ingredient_embeddings.pkl export
 
 ### Pending Todos
 
@@ -130,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T18:04:47.804Z
-Stopped at: Completed 04-01-PLAN.md (conftest.py fixture + 9 xfail test stubs, pytest exits 0)
+Last session: 2026-03-12T18:14:10.108Z
+Stopped at: Completed 04-04-PLAN.md (train_gat.py training script + 2 tests green)
 Resume file: None
