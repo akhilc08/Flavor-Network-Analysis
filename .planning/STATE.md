@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-12T02:14:54.656Z"
-last_activity: 2026-03-12 — Completed Plan 01-02 (FlavorDB2 scraper, 935 ingredients)
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-12T02:28:10.000Z"
+last_activity: 2026-03-12 — Completed Plan 02-02 (SMILES fetch, 1788-entry pubchem_cache.json)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 24
-  completed_plans: 5
-  percent: 50
+  completed_plans: 6
+  percent: 25
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Surface ingredient pairs that are molecularly compatible but culturally underused — the surprise score is the key metric, not just similarity.
-**Current focus:** Phase 1: Foundation
+**Current focus:** Phase 2: Feature Engineering
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation)
-Plan: 3 of 4 in current phase
+Phase: 2 of 6 (Feature Engineering)
+Plan: 2 of 4 in current phase (02-02 complete)
 Status: In progress
-Last activity: 2026-03-12 — Completed Plan 01-02 (FlavorDB2 scraper, 935 ingredients)
+Last activity: 2026-03-12 — Completed Plan 02-02 (SMILES fetch, 1788-entry pubchem_cache.json)
 
-Progress: [█████░░░░░] 50%
+Progress: [██░░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -77,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Pipeline orchestrator uses direct function import (not subprocess) for cleaner exception handling and unified logging
 - [Phase 01-foundation]: token_sort_ratio used for FooDB fuzzy matching — handles word-order variants like garlic-roasted correctly (not fuzz.ratio)
 - [Phase 02-feature-engineering]: pytest.importorskip() inside test bodies for zero-error collection before modules exist; strict=False xfail for file-existence tests
+- [02-02]: FlavorDB2 molecules_json is the primary SMILES source (1788/1788 coverage); PubChem is gap-fill only — happy path completes with zero network calls
+- [02-02]: 4xx responses stored as null (legitimate miss); 5xx raises exception to prevent non-deterministic null entries
+- [02-02]: Cache keys are strings (json.dump int→str conversion); gate check uses str(id) comparison
 
 ### Pending Todos
 
@@ -85,12 +88,12 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 1 risk]: FlavorDB2 endpoint is undocumented and community-known only; cache all responses on first run; FooDB-only fallback acceptable if endpoint changes
-- [Phase 2 risk]: PubChem rate limiting can leave silent SMILES gaps; token bucket at 400 req/min ceiling and full cache required before RDKit processing
+- [Phase 2 risk RESOLVED]: PubChem rate limiting is not a concern — FlavorDB2 already provides 100% SMILES coverage; pubchem_cache.json complete with 0 null entries
 - [Phase 3 risk]: RandomLinkSplit configuration for HeteroData with multiple edge types has limited worked examples — may need research during planning
 - [Phase 5 risk]: Experience replay GNN fine-tune pattern is not well-documented; buffer size and LR schedule need empirical validation
 
 ## Session Continuity
 
-Last session: 2026-03-12T02:14:54.653Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-12T02:28:10.000Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
