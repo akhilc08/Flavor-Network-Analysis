@@ -1,16 +1,18 @@
 """
-Phase 1 Pipeline Orchestrator — runs all data ingestion stages in order.
+Pipeline Orchestrator — runs all data ingestion and feature engineering stages in order.
 
 Stages:
     1. FlavorDB2 scraper  → data/raw/ingredients.csv + data/raw/molecules.csv
     2. Recipe co-occurrence → data/raw/recipes.csv
     3. FooDB fuzzy join   → enriches data/raw/molecules.csv
+    4. SMILES fetch       → data/raw/pubchem_cache.json
 
 Usage:
     python run_pipeline.py                          # run all stages
     python run_pipeline.py --skip-scrape            # skip FlavorDB2 stage
     python run_pipeline.py --skip-foodb             # skip FooDB join stage
     python run_pipeline.py --skip-recipes           # skip recipe co-occurrence stage
+    python run_pipeline.py --skip-smiles            # skip SMILES fetch stage
     python run_pipeline.py --force                  # re-run all stages even if outputs exist
 """
 
@@ -65,10 +67,17 @@ def _import_stages():
         logger.error("Cannot import join_foodb: %s", exc)
         join_foodb = None
 
+    try:
+        from data.fetch_smiles import fetch_smiles
+    except ImportError as exc:
+        logger.error("Cannot import fetch_smiles: %s", exc)
+        fetch_smiles = None
+
     return {
         "scrape_flavordb": scrape_flavordb,
         "scrape_recipes": scrape_recipes,
         "join_foodb": join_foodb,
+        "fetch_smiles": fetch_smiles,
     }
 
 
@@ -77,10 +86,11 @@ def _import_stages():
 # ---------------------------------------------------------------------------
 
 def _print_summary() -> None:
-    """Read the three output CSVs and print the Phase 1 pipeline summary table."""
+    """Read the output files and print the pipeline summary table."""
     ingredients_path = "data/raw/ingredients.csv"
     molecules_path = "data/raw/molecules.csv"
     recipes_path = "data/raw/recipes.csv"
+    smiles_cache_path = "data/raw/pubchem_cache.json"
 
     # Gather stats for each file
     def _read_stat(path: str) -> str | int:
@@ -109,6 +119,19 @@ def _print_summary() -> None:
         except Exception:
             foodb_info = "N/A"
 
+    # SMILES cache stats
+    smiles_info = "NOT YET CREATED"
+    if os.path.exists(smiles_cache_path):
+        try:
+            import json
+            with open(smiles_cache_path) as f:
+                cache = json.load(f)
+            n_total = len(cache)
+            n_with = sum(1 for v in cache.values() if v is not None)
+            smiles_info = f"{n_with}/{n_total} with SMILES ({int(n_with/n_total*100) if n_total else 0}%)"
+        except Exception:
+            smiles_info = "ERROR reading cache"
+
     # Format rows
     def _fmt_row(count) -> str:
         if isinstance(count, int):
@@ -120,14 +143,17 @@ def _print_summary() -> None:
     n_recipes_str = f"{n_recipes:,}" if isinstance(n_recipes, int) else str(n_recipes)
 
     print()
-    print("=== Phase 1 Pipeline Summary ===")
-    print(f"FlavorDB:  {n_ingredients_str} ingredients, {n_molecules_str} molecules")
-    print(f"FooDB:     {foodb_info}")
-    print(f"Recipes:   {n_recipes_str} co-occurrence pairs")
-    print(f"Output:    {ingredients_path:<38} [{_fmt_row(n_ingredients)}]")
-    print(f"           {molecules_path:<38} [{_fmt_row(n_molecules)}]")
-    print(f"           {recipes_path:<38} [{_fmt_row(n_recipes)}]")
-    print("================================")
+    print("=== Pipeline Summary ===")
+    print(f"FlavorDB:    {n_ingredients_str} ingredients, {n_molecules_str} molecules")
+    print(f"FooDB:       {foodb_info}")
+    print(f"Recipes:     {n_recipes_str} co-occurrence pairs")
+    print(f"SMILES:      {smiles_info}")
+    print()
+    print(f"Output:      {ingredients_path:<38} [{_fmt_row(n_ingredients)}]")
+    print(f"             {molecules_path:<38} [{_fmt_row(n_molecules)}]")
+    print(f"             {recipes_path:<38} [{_fmt_row(n_recipes)}]")
+    print(f"             {smiles_cache_path:<38} [smiles_fetch]")
+    print("========================")
     print()
 
 
@@ -197,8 +223,25 @@ def main(args: argparse.Namespace) -> None:
                     traceback.format_exc(),
                 )
 
+    # --- Phase 2: SMILES fetch ---
+    if args.skip_smiles:
+        logger.info("[SKIP] fetch_smiles (--skip-smiles)")
+    else:
+        fetch_smiles_fn = stages.get("fetch_smiles")
+        if fetch_smiles_fn is None:
+            logger.error("[SKIP] fetch_smiles — import failed")
+        else:
+            logger.info("--- Phase 2: SMILES fetch ---")
+            try:
+                fetch_smiles_fn(force=args.force)
+            except Exception:
+                logger.error(
+                    "Phase 2 (fetch_smiles) failed:\n%s",
+                    traceback.format_exc(),
+                )
+
     elapsed = time.time() - pipeline_start
-    logger.info("=== Phase 1 Pipeline complete (%.1f s) ===", elapsed)
+    logger.info("=== Pipeline complete (%.1f s) ===", elapsed)
 
     # --- Final summary table ---
     _print_summary()
@@ -206,18 +249,20 @@ def main(args: argparse.Namespace) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Phase 1 pipeline orchestrator — runs all data ingestion stages.",
+        description="Pipeline orchestrator — runs all data ingestion and feature engineering stages.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Stages (in order):
   1. FlavorDB2 scraper   → data/raw/ingredients.csv + data/raw/molecules.csv
   2. Recipe co-occurrence → data/raw/recipes.csv
   3. FooDB fuzzy join    → enriches data/raw/molecules.csv
+  4. SMILES fetch        → data/raw/pubchem_cache.json
 
 Examples:
   python run_pipeline.py                   # run all stages
   python run_pipeline.py --skip-scrape     # skip FlavorDB2 (already scraped)
   python run_pipeline.py --skip-foodb      # skip FooDB join (no FooDB data)
+  python run_pipeline.py --skip-smiles     # skip SMILES fetch (cache already complete)
   python run_pipeline.py --force           # re-run all stages from scratch
 """,
     )
@@ -235,6 +280,11 @@ Examples:
         "--skip-recipes",
         action="store_true",
         help="Skip recipe co-occurrence stage.",
+    )
+    parser.add_argument(
+        "--skip-smiles",
+        action="store_true",
+        help="Skip SMILES fetch stage (pubchem_cache.json already complete).",
     )
     parser.add_argument(
         "--force",
