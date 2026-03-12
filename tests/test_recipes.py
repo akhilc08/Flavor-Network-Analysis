@@ -14,7 +14,6 @@ PROJECT_ROOT = Path(__file__).parent.parent
 RECIPES_CSV = PROJECT_ROOT / "data" / "raw" / "recipes.csv"
 
 
-@pytest.mark.skip(reason="RecipeNLG not yet processed — execute Plan 01-04 first")
 def test_cooccurrence_count():
     """Verify that the recipe co-occurrence table has sufficient pair coverage.
 

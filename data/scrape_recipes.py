@@ -17,6 +17,7 @@ checkpointing.
 """
 
 import argparse
+import ast
 import json
 import logging
 import os
@@ -29,7 +30,6 @@ from itertools import combinations
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from datasets import load_dataset
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
@@ -94,11 +94,34 @@ The pipeline will use RecipeNLG data only until this file is provided."""
 # RecipeNLG streaming co-occurrence counter
 # ---------------------------------------------------------------------------
 
+RECIPENLG_CSV_URL = (
+    "https://huggingface.co/datasets/Mahimas/recipenlg/resolve/main/RecipeNLG.csv"
+)
+RECIPENLG_TOTAL = 2231142  # total recipes for tqdm estimate
+
+
+def _parse_ner_list(raw: str) -> list[str]:
+    """Parse NER field which is a Python/JSON list literal like '["flour", "egg"]'."""
+    if not raw or not isinstance(raw, str):
+        return []
+    raw = raw.strip()
+    if not raw.startswith("["):
+        return []
+    try:
+        return ast.literal_eval(raw)
+    except Exception:
+        try:
+            return json.loads(raw)
+        except Exception:
+            return []
+
+
 def process_recipe_nlg() -> Counter:
     """Stream 2.2M RecipeNLG recipes and return ingredient co-occurrence Counter.
 
-    Uses recipe["ner"] (clean NER tokens like "flour") NOT recipe["ingredients"]
-    (raw strings like "2 cups flour, sifted") to avoid false-unique pairs.
+    Streams the full RecipeNLG dataset CSV directly from HuggingFace via HTTP
+    using pandas read_csv with chunksize (no downloads to disk). Uses the NER
+    column (clean ingredient tokens) instead of the raw ingredients strings.
 
     Normalizes pairs as (min(a, b), max(a, b)) for consistent key ordering.
     Filters tokens shorter than 3 or longer than 50 characters (noise).
@@ -109,36 +132,52 @@ def process_recipe_nlg() -> Counter:
         Keys are (ingredient_a, ingredient_b) tuples (alphabetical order).
         Values are integer co-occurrence counts.
     """
-    logger.info("Starting RecipeNLG streaming co-occurrence processing...")
-    dataset = load_dataset("mbien/recipe_nlg", streaming=True, split="train")
+    logger.info("Starting RecipeNLG streaming co-occurrence processing from HuggingFace...")
+    logger.info("Streaming from: %s", RECIPENLG_CSV_URL)
+
+    session = requests.Session()
+    session.headers.update({"User-Agent": "Mozilla/5.0"})
+    resp = session.get(RECIPENLG_CSV_URL, stream=True, timeout=60)
+    resp.raise_for_status()
 
     co_occurrence: Counter = Counter()
     recipe_count = 0
+    chunk_size = 5000
 
-    # Use 2231142 as the estimate for tqdm progress display
     with logging_redirect_tqdm():
-        for recipe in tqdm(dataset, total=2231142, desc="RecipeNLG"):
-            # Use NER tokens — clean normalized ingredient names
-            raw_ners = recipe.get("ner", []) or []
-            ingredients = []
-            for token in raw_ners:
-                token = token.strip().lower()
-                if 3 <= len(token) <= 50:
-                    ingredients.append(token)
+        pbar = tqdm(total=RECIPENLG_TOTAL, desc="RecipeNLG", unit="recipes")
+        for chunk in pd.read_csv(resp.raw, chunksize=chunk_size, low_memory=False):
+            if "NER" not in chunk.columns:
+                logger.warning("NER column not found in chunk — skipping")
+                pbar.update(len(chunk))
+                continue
 
-            # Deduplicate within recipe before combining
-            ingredients = list(set(ingredients))
+            for ner_raw in chunk["NER"]:
+                tokens_raw = _parse_ner_list(str(ner_raw))
+                ingredients = []
+                for token in tokens_raw:
+                    token = str(token).strip().lower()
+                    if 3 <= len(token) <= 50:
+                        ingredients.append(token)
 
-            for a, b in combinations(sorted(ingredients), 2):
-                co_occurrence[(a, b)] += 1
+                # Deduplicate within recipe before combining
+                ingredients = list(set(ingredients))
 
-            recipe_count += 1
-            if recipe_count % 100_000 == 0:
+                for a, b in combinations(sorted(ingredients), 2):
+                    co_occurrence[(a, b)] += 1
+
+                recipe_count += 1
+
+            pbar.update(len(chunk))
+
+            if recipe_count % 100_000 == 0 and recipe_count > 0:
                 logger.info(
                     "RecipeNLG: processed %d recipes, %d pairs so far",
                     recipe_count,
                     len(co_occurrence),
                 )
+
+        pbar.close()
 
     logger.info(
         "RecipeNLG complete: %d recipes processed, %d unique pairs",
@@ -152,22 +191,36 @@ def process_recipe_nlg() -> Counter:
 # AllRecipes polite scraper
 # ---------------------------------------------------------------------------
 
+def _is_recipe_type(node: dict) -> bool:
+    """Check if a JSON-LD node has @type Recipe (handles both string and list)."""
+    t = node.get("@type")
+    if isinstance(t, str):
+        return t == "Recipe"
+    if isinstance(t, list):
+        return "Recipe" in t
+    return False
+
+
 def _extract_ingredients_json_ld(soup: BeautifulSoup) -> list[str]:
-    """Try to extract recipeIngredient from JSON-LD script blocks."""
+    """Try to extract recipeIngredient from JSON-LD script blocks.
+
+    Handles @type as both string ("Recipe") and list (["Recipe"]),
+    as well as nested @graph structures.
+    """
     for script in soup.find_all("script", type="application/ld+json"):
         try:
             data = json.loads(script.string or "")
             # JSON-LD can be a list or a single object
             if isinstance(data, list):
                 for item in data:
-                    if isinstance(item, dict) and item.get("@type") == "Recipe":
+                    if isinstance(item, dict) and _is_recipe_type(item):
                         return item.get("recipeIngredient", [])
             elif isinstance(data, dict):
-                if data.get("@type") == "Recipe":
+                if _is_recipe_type(data):
                     return data.get("recipeIngredient", [])
                 # Sometimes nested under @graph
                 for item in data.get("@graph", []):
-                    if isinstance(item, dict) and item.get("@type") == "Recipe":
+                    if isinstance(item, dict) and _is_recipe_type(item):
                         return item.get("recipeIngredient", [])
         except (json.JSONDecodeError, AttributeError):
             continue
@@ -175,13 +228,17 @@ def _extract_ingredients_json_ld(soup: BeautifulSoup) -> list[str]:
 
 
 def _extract_ingredients_css(soup: BeautifulSoup) -> list[str]:
-    """CSS fallback for ingredient extraction when JSON-LD is absent."""
+    """CSS fallback for ingredient extraction when JSON-LD is absent or fails.
+
+    Tries multiple selectors covering AllRecipes current and legacy markup.
+    """
     selectors = [
-        "span[class*='ingredient']",
         "li[class*='ingredient']",
+        "span[class*='ingredient']",
         "span.ingredients-item-name",
         "li.ingredients-item",
         "p[class*='ingredient']",
+        "[data-ingredient-name]",
     ]
     for sel in selectors:
         elements = soup.select(sel)
@@ -211,13 +268,25 @@ def _parse_ingredient_name(raw: str) -> str:
 
 
 def _is_blocked(response: requests.Response) -> bool:
-    """Detect bot-blocking signals from a response."""
+    """Detect bot-blocking signals from a response.
+
+    AllRecipes uses Cloudflare as a CDN — their normal pages reference
+    'cloudflare' in HTML. Only flag actual challenge/CAPTCHA pages, not
+    legitimate pages that happen to mention Cloudflare.
+    """
     if response.status_code in (403, 429):
         return True
-    if "cloudflare" in response.text.lower():
+    # Only flag Cloudflare if there's an actual bot challenge present
+    text_lower = response.text.lower()
+    if "challenge-form" in text_lower and "cloudflare" in text_lower:
         return True
-    if response.status_code == 200 and len(response.text) < 500:
-        # Suspiciously short HTML page — likely a challenge/CAPTCHA page
+    if "cf_chl_" in response.text:
+        return True
+    # Actual Cloudflare CAPTCHA page indicator
+    if response.status_code == 403 and "cloudflare" in text_lower:
+        return True
+    # cf-mitigated: challenge header signals Cloudflare blocked the request
+    if response.headers.get("cf-mitigated", "").lower() == "challenge":
         return True
     return False
 

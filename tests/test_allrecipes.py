@@ -17,7 +17,6 @@ ALLRECIPES_CSV = PROJECT_ROOT / "data" / "raw" / "recipes_allrecipes.csv"
 PIPELINE_LOG = PROJECT_ROOT / "logs" / "pipeline.log"
 
 
-@pytest.mark.skip(reason="AllRecipes scraper not yet run — execute Plan 01-04 or provide manual CSV")
 def test_scraper_runs():
     """Verify that AllRecipes data is available via scraper or manual fallback.
 
