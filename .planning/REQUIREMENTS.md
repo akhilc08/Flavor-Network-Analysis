@@ -54,8 +54,8 @@
 - [x] **MODEL-05**: Recipe loss: BCE link prediction on ingredient pairs co-occurring in >10 recipes (label=1)
 - [x] **MODEL-06**: InfoNCE contrastive loss with temperature τ starting at 0.1–0.2 (not 0.07); gradient clipping (max_norm=1.0) applied unconditionally; InfoNCE loss logged separately from other components
 - [x] **MODEL-07**: Combined loss: α=0.4 × molecular_loss + β=0.4 × recipe_loss + γ=0.2 × contrastive_loss; α/β/γ tunable
-- [ ] **MODEL-08**: Training runs 200 epochs, Adam optimizer lr=1e-3, cosine LR schedule, MPS backend; best checkpoint saved by validation AUC
-- [ ] **MODEL-09**: Ingredient embeddings (128-dim dict) exported to model/embeddings/ingredient_embeddings.pkl after training
+- [x] **MODEL-08**: Training runs 200 epochs, Adam optimizer lr=1e-3, cosine LR schedule, MPS backend; best checkpoint saved by validation AUC
+- [x] **MODEL-09**: Ingredient embeddings (128-dim dict) exported to model/embeddings/ingredient_embeddings.pkl after training
 
 ### Scoring
 
