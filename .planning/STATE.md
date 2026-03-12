@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-12T04:07:21.525Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-03-12T04:10:48.190Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 25
-  completed_plans: 10
+  completed_plans: 11
   percent: 36
 ---
 
@@ -58,6 +58,7 @@ Progress: [████░░░░░░] 36%
 | Phase 02-feature-engineering P04 | 17 | 2 tasks | 4 files |
 | Phase 03-graph-construction P01 | 2 | 1 tasks | 1 files |
 | Phase 03-graph-construction P02 | 10 | 2 tasks | 2 files |
+| Phase 03-graph-construction P03 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,8 @@ Recent decisions affecting current work:
 - [03-01]: test_validation_gate skips only on ImportError (not .pt absence) — tests run_validation_gate() in isolation with minimal HeteroData, no built artifact needed
 - [Phase 03-graph-construction]: graph/build_graph.py was already committed in fdd1de9; Task 1 verified correct implementation was in place
 - [Phase 03-graph-construction]: test_validation_gate: removed ImportError skip guard; now unconditionally imports run_validation_gate from graph.build_graph
+- [Phase 03-graph-construction]: _build_structural_edges uses separate ExplicitBitVect deserialization path (not _deserialize_fp numpy path) because BulkTanimotoSimilarity requires BitVect objects
+- [Phase 03-graph-construction]: Contains edges dual-strategy: molecule_ids column in ingredients.parquet preferred; ingredient_id in mol_df as fallback
 
 ### Pending Todos
 
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T04:07:21.521Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-12T04:10:48.184Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
