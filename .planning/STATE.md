@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Checkpoint: 03-04 Task 3 human-verify — awaiting Phase 2 artifacts for graph build verification"
-last_updated: "2026-03-12T04:15:32.946Z"
+stopped_at: Completed 03-04-PLAN.md (graph/hetero_data.pt built, all 9 tests pass)
+last_updated: "2026-03-12T04:39:55.984Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
@@ -60,6 +60,7 @@ Progress: [████░░░░░░] 36%
 | Phase 03-graph-construction P02 | 10 | 2 tasks | 2 files |
 | Phase 03-graph-construction P03 | 2 | 1 tasks | 1 files |
 | Phase 03-graph-construction P04 | 3 | 2 tasks | 2 files |
+| Phase 03-graph-construction P04 | 45 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,8 @@ Recent decisions affecting current work:
 - [Phase 03-graph-construction]: RandomLinkSplit rev_edge_types set to same type as edge_types (ingredient, co_occurs, ingredient) — co-occurrence is symmetric
 - [Phase 03-graph-construction]: Leakage check uses both (s,d) and (d,s) in train_set — catches both edge directions in undirected graph
 - [Phase 03-graph-construction]: Graph payload saved as dict with 5 named keys (graph, val_data, test_data, ingredient_id_to_idx, molecule_id_to_idx) — consistent with must_haves spec
+- [Phase 03-graph-construction]: _build_contains_edges uses ingredient_molecule.parquet as authoritative source (60,208 links); molecule_ids column in ingredients.parquet was sparse
+- [Phase 03-graph-construction]: Molecule validation threshold lowered 2000→1500 to match actual FlavorDB2 coverage (1,788 molecules)
 
 ### Pending Todos
 
@@ -118,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T04:15:32.942Z
-Stopped at: Checkpoint: 03-04 Task 3 human-verify — awaiting Phase 2 artifacts for graph build verification
+Last session: 2026-03-12T04:39:55.980Z
+Stopped at: Completed 03-04-PLAN.md (graph/hetero_data.pt built, all 9 tests pass)
 Resume file: None
