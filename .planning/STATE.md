@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-12T00:19:00Z"
-last_activity: 2026-03-12 — Completed Plan 01-01 (environment spec and project skeleton)
+status: executing
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-12T00:32:27.600Z"
+last_activity: 2026-03-12 — Completed Plan 01-02 (FlavorDB2 scraper, 935 ingredients)
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
-  percent: 4
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
@@ -26,27 +26,27 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-12 — Completed Plan 01-01 (environment spec and project skeleton)
+Last activity: 2026-03-12 — Completed Plan 01-02 (FlavorDB2 scraper, 935 ingredients)
 
-Progress: [░░░░░░░░░░] 4%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 3 min
-- Total execution time: 0.05 hours
+- Total plans completed: 2
+- Average duration: 5.5 min
+- Total execution time: 0.18 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 1 | 3 min | 3 min |
+| 01-foundation | 2 | 11 min | 5.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3 min)
+- Last 5 plans: 01-01 (3 min), 01-02 (8 min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - [Pre-Phase 1]: Claude model target is `claude-sonnet-4-6` (Anthropic SDK 0.84.0)
 - [01-01]: test_outputs.py intentionally NOT skipped — it is the Phase 1 acceptance gate that fails until all data files exist
 - [01-01]: AllRecipes fallback CSV format: recipe_name + comma-separated ingredients column
+- [Phase 01-02]: Cache 404 responses alongside 200s in FlavorDB2 scraper: entity gaps are permanent, no benefit to re-fetching
+- [Phase 01-02]: Stop FlavorDB scrape after 10 consecutive 404s: avoids tail thrashing; actual stop at entity 988
+- [Phase 01-02]: Store molecules_json as JSON string per ingredient row: defers normalization to Phase 2 feature engineering
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T00:19:00Z
-Stopped at: Completed 01-01-PLAN.md
-Resume file: .planning/phases/01-foundation/01-02-PLAN.md
+Last session: 2026-03-12T00:32:27.598Z
+Stopped at: Completed 01-02-PLAN.md
+Resume file: .planning/phases/01-foundation/01-03-PLAN.md
