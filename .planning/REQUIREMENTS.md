@@ -35,15 +35,15 @@
 
 ### Graph Construction
 
-- [ ] **GRAPH-01**: Heterogeneous graph constructed manually as PyTorch Geometric HeteroData (not via from_networkx()); explicit ingredient_id_to_idx and molecule_id_to_idx dicts maintained
-- [ ] **GRAPH-02**: Ingredient nodes feature vector = concat([multimodal features, mean-pooled Morgan fingerprints, flavor profile vector])
-- [ ] **GRAPH-03**: Molecule nodes feature vector = RDKit descriptors + Morgan fingerprints
-- [ ] **GRAPH-04**: Ingredient→Molecule "contains" edges with weight = FooDB concentration if available, else 1.0
-- [ ] **GRAPH-05**: Ingredient→Ingredient "co-occurs" edges with weight = normalized co-occurrence count across all recipes
-- [ ] **GRAPH-06**: Molecule→Molecule "structurally similar" edges for Tanimoto similarity > 0.7
-- [ ] **GRAPH-07**: Graph passes validation gate: ≥500 ingredient nodes, ≥2000 molecule nodes, all 3 edge types present; gate blocks training if not met
-- [ ] **GRAPH-08**: Link prediction train/val/test split created with zero test-edge leakage (test edges excluded from message-passing graph); leakage asserted before training begins
-- [ ] **GRAPH-09**: Graph saved as graph/hetero_data.pt
+- [x] **GRAPH-01**: Heterogeneous graph constructed manually as PyTorch Geometric HeteroData (not via from_networkx()); explicit ingredient_id_to_idx and molecule_id_to_idx dicts maintained
+- [x] **GRAPH-02**: Ingredient nodes feature vector = concat([multimodal features, mean-pooled Morgan fingerprints, flavor profile vector])
+- [x] **GRAPH-03**: Molecule nodes feature vector = RDKit descriptors + Morgan fingerprints
+- [x] **GRAPH-04**: Ingredient→Molecule "contains" edges with weight = FooDB concentration if available, else 1.0
+- [x] **GRAPH-05**: Ingredient→Ingredient "co-occurs" edges with weight = normalized co-occurrence count across all recipes
+- [x] **GRAPH-06**: Molecule→Molecule "structurally similar" edges for Tanimoto similarity > 0.7
+- [x] **GRAPH-07**: Graph passes validation gate: ≥500 ingredient nodes, ≥2000 molecule nodes, all 3 edge types present; gate blocks training if not met
+- [x] **GRAPH-08**: Link prediction train/val/test split created with zero test-edge leakage (test edges excluded from message-passing graph); leakage asserted before training begins
+- [x] **GRAPH-09**: Graph saved as graph/hetero_data.pt
 
 ### Model Training
 

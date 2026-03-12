@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-03-12T03:07:23.776Z"
-last_activity: 2026-03-11 — Completed Plan 02-03 (RDKit descriptors, Morgan fingerprints, Tanimoto edges)
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-11T22:00:00.000Z"
+last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 25
-  completed_plans: 8
-  percent: 29
+  completed_plans: 9
+  percent: 36
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Surface ingredient pairs that are molecularly compatible but culturally underused — the surprise score is the key metric, not just similarity.
-**Current focus:** Phase 2: Feature Engineering
+**Current focus:** Phase 3: Graph Construction
 
 ## Current Position
 
-Phase: 2 of 6 (Feature Engineering)
-Plan: 3 of 4 in current phase (02-03 complete)
+Phase: 3 of 6 (Graph Construction)
+Plan: 1 of N in current phase (03-01 complete)
 Status: In progress
-Last activity: 2026-03-11 — Completed Plan 02-03 (RDKit descriptors, Morgan fingerprints, Tanimoto edges)
+Last activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 
-Progress: [███░░░░░░░] 29%
+Progress: [████░░░░░░] 36%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [███░░░░░░░] 29%
 | Phase 02-feature-engineering P03 | 4 | 2 tasks | 3 files |
 | Phase 02-feature-engineering P03 | 4 | 2 tasks | 3 files |
 | Phase 02-feature-engineering P04 | 17 | 2 tasks | 4 files |
+| Phase 03-graph-construction P01 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 02-03]: Morgan fingerprint stored as 1024-byte ASCII bit string; Phase 3 decode: (np.frombuffer(fp_bytes, dtype=np.uint8) == ord('1')).astype(np.float32)
 - [Phase 02-feature-engineering]: encode_flavor_profile keeps string signature (test-authoritative); build_features() unions molecule tags internally before encoding
 - [Phase 02-feature-engineering]: cooccurrence.parquet fallback: when recipes.csv unavailable, compute co-occurrence from AllRecipes (76 recipes, 5,824 pairs); full version requires scrape_recipes (15-45 min)
+- [03-01]: _load_payload() called before any import torch in test bodies — ensures pytest.skip fires on missing artifact instead of ModuleNotFoundError masking the skip
+- [03-01]: test_validation_gate skips only on ImportError (not .pt absence) — tests run_validation_gate() in isolation with minimal HeteroData, no built artifact needed
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T03:02:48.732Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-03-11T22:00:00.000Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None
