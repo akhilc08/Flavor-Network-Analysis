@@ -7,6 +7,7 @@ Stages:
     3. FooDB fuzzy join   → enriches data/raw/molecules.csv
     4. SMILES fetch       → data/raw/pubchem_cache.json
     5. Feature engineering → data/processed/*.parquet (molecules, tanimoto, ingredients, cooccurrence)
+    6. Graph construction → graph/hetero_data.pt + graph/index_maps.json
 
 Usage:
     python run_pipeline.py                          # run all stages
@@ -81,12 +82,19 @@ def _import_stages():
         logger.error("Cannot import build_features: %s", exc)
         build_features = None
 
+    try:
+        from graph.build_graph import build_graph
+    except ImportError as exc:
+        logger.error("Cannot import build_graph: %s", exc)
+        build_graph = None
+
     return {
         "scrape_flavordb": scrape_flavordb,
         "scrape_recipes": scrape_recipes,
         "join_foodb": join_foodb,
         "fetch_smiles": fetch_smiles,
         "build_features": build_features,
+        "build_graph": build_graph,
     }
 
 
@@ -104,6 +112,8 @@ def _print_summary() -> None:
     cooccurrence_parquet_path = "data/processed/cooccurrence.parquet"
     molecules_parquet_path = "data/processed/molecules.parquet"
     tanimoto_parquet_path = "data/processed/tanimoto_edges.parquet"
+    hetero_data_path = "graph/hetero_data.pt"
+    index_maps_path = "graph/index_maps.json"
 
     # Gather stats for each file
     def _read_stat(path: str) -> str | int:
@@ -171,6 +181,14 @@ def _print_summary() -> None:
     mol_parquet_info = _read_parquet_stat(molecules_parquet_path)
     tan_parquet_info = _read_parquet_stat(tanimoto_parquet_path)
 
+    # Graph construction stats
+    hetero_data_info = "NOT YET CREATED"
+    if os.path.exists(hetero_data_path):
+        hetero_data_info = "EXISTS"
+    index_maps_info = "NOT YET CREATED"
+    if os.path.exists(index_maps_path):
+        index_maps_info = "EXISTS"
+
     print()
     print("=== Pipeline Summary ===")
     print(f"FlavorDB:    {n_ingredients_str} ingredients, {n_molecules_str} molecules")
@@ -179,6 +197,7 @@ def _print_summary() -> None:
     print(f"SMILES:      {smiles_info}")
     print(f"Features:    ingredients.parquet={ingr_parquet_info}, molecules.parquet={mol_parquet_info}")
     print(f"             tanimoto_edges.parquet={tan_parquet_info}, cooccurrence.parquet={cooc_parquet_info}")
+    print(f"Graph:       hetero_data.pt={hetero_data_info}, index_maps.json={index_maps_info}")
     print()
     print(f"Output:      {ingredients_path:<38} [{_fmt_row(n_ingredients)}]")
     print(f"             {molecules_path:<38} [{_fmt_row(n_molecules)}]")
@@ -186,6 +205,8 @@ def _print_summary() -> None:
     print(f"             {smiles_cache_path:<38} [smiles_fetch]")
     print(f"             {ingredients_parquet_path:<38} [{ingr_parquet_info}]")
     print(f"             {cooccurrence_parquet_path:<38} [{cooc_parquet_info}]")
+    print(f"             {hetero_data_path:<38} [{hetero_data_info}]")
+    print(f"             {index_maps_path:<38} [{index_maps_info}]")
     print("========================")
     print()
 
@@ -287,6 +308,23 @@ def main(args: argparse.Namespace) -> None:
             except Exception as e:
                 logger.error("build_features failed: %s", e)
 
+    # --- Stage 4: Graph construction ---
+    graph_fn = stages.get("build_graph")
+    if graph_fn is None:
+        logger.error("[SKIP] Graph construction — import failed")
+    else:
+        if not args.force and os.path.exists("graph/hetero_data.pt"):
+            logger.info("[SKIP] Graph construction — graph/hetero_data.pt already exists (--force to rebuild)")
+        else:
+            logger.info("--- Stage 4: Graph construction ---")
+            try:
+                graph_fn(force=args.force)
+            except Exception:
+                logger.error(
+                    "Stage 4 (Graph construction) failed:\n%s",
+                    traceback.format_exc(),
+                )
+
     elapsed = time.time() - pipeline_start
     logger.info("=== Pipeline complete (%.1f s) ===", elapsed)
 
@@ -305,6 +343,7 @@ Stages (in order):
   3. FooDB fuzzy join     → enriches data/raw/molecules.csv
   4. SMILES fetch         → data/raw/pubchem_cache.json
   5. Feature engineering  → data/processed/*.parquet
+  6. Graph construction   → graph/hetero_data.pt + graph/index_maps.json
 
 Examples:
   python run_pipeline.py                       # run all stages
