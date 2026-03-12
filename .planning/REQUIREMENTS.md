@@ -7,10 +7,10 @@
 
 ### Environment Setup
 
-- [ ] **ENV-01**: Project runs on Apple Silicon (M2) using conda+pip hybrid install (RDKit via conda-forge, PyTorch via pip wheel index)
-- [ ] **ENV-02**: PyTorch uses MPS backend on Apple Silicon for training acceleration
-- [ ] **ENV-03**: All dependency versions pinned in environment.yml and requirements.txt (PyTorch 2.6, PyG 2.7, RDKit 2025.03)
-- [ ] **ENV-04**: Project structure matches spec: data/, graph/, model/, scoring/, app/ directories
+- [x] **ENV-01**: Project runs on Apple Silicon (M2) using conda+pip hybrid install (RDKit via conda-forge, PyTorch via pip wheel index)
+- [x] **ENV-02**: PyTorch uses MPS backend on Apple Silicon for training acceleration
+- [x] **ENV-03**: All dependency versions pinned in environment.yml and requirements.txt (PyTorch 2.6, PyG 2.7, RDKit 2025.03)
+- [x] **ENV-04**: Project structure matches spec: data/, graph/, model/, scoring/, app/ directories
 
 ### Data Ingestion
 

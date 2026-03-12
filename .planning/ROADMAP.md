@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Environment spec (environment.yml, README, test scaffold)
+- [x] 01-01-PLAN.md — Environment spec (environment.yml, README, test scaffold)
 - [ ] 01-02-PLAN.md — FlavorDB2 scraper (ingredients.csv, molecules.csv)
 - [ ] 01-03-PLAN.md — Recipe co-occurrence (RecipeNLG streaming + AllRecipes, recipes.csv)
 - [ ] 01-04-PLAN.md — FooDB join + run_pipeline.py orchestrator
@@ -106,7 +106,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/4 | Not started | - |
+| 1. Foundation | 1/4 | In progress | - |
 | 2. Feature Engineering | 0/TBD | Not started | - |
 | 3. Graph Construction | 0/TBD | Not started | - |
 | 4. Model Training | 0/TBD | Not started | - |
