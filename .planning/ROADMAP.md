@@ -120,7 +120,15 @@ Plans:
   3. Page 3 renders a PyVis graph centered on a selected ingredient with <= 50 nodes; clicking a node re-centers the graph on that ingredient
   4. Page 4 generates a recipe via Claude API (`claude-sonnet-4-6`) that includes molecular pairing rationale — the recipe is readable and references specific shared compounds
   5. All four pages load without raw Python tracebacks visible to the user under normal operation
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — App scaffold: environment.yml packages, app/utils (theme + cache), app/app.py, test stubs
+- [ ] 06-02-PLAN.md — Page 1 Search: 1_Search.py + app/utils/search.py (radar chart, molecule tags, why it works)
+- [ ] 06-03-PLAN.md — Page 2 Rate: 2_Rate.py + app/utils/rate.py (star sliders, fine-tune spinner, AUC delta)
+- [ ] 06-04-PLAN.md — Page 3 Graph: 3_Graph.py + app/utils/graph.py (PyVis network, selectbox pivot)
+- [ ] 06-05-PLAN.md — Page 4 Recipe: 4_Recipe.py (Anthropic streaming, molecular rationale prompt)
+- [ ] 06-06-PLAN.md — Verification: automated test suite + human browser check of all 4 pages
 
 ## Progress
 
@@ -134,4 +142,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Graph Construction | 0/TBD | Not started | - |
 | 4. Model Training | 0/4 | Planned | - |
 | 5. Scoring and Active Learning | 0/3 | Planned | - |
-| 6. Streamlit UI | 0/TBD | Not started | - |
+| 6. Streamlit UI | 0/6 | Planned | - |
