@@ -130,7 +130,6 @@ def test_combined_loss_formula():
 # MODEL-08: Checkpoint saved when AUC improves
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(reason="model/train_gat.py not yet implemented", strict=False)
 def test_checkpoint_save_on_improvement(tmp_path):
     from model.train_gat import save_checkpoint_if_improved
     ckpt_path = tmp_path / "best_model.pt"
@@ -150,7 +149,6 @@ def test_checkpoint_save_on_improvement(tmp_path):
 # MODEL-09: ingredient_embeddings.pkl contains correct keys and 128-dim vecs
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(reason="model/train_gat.py not yet implemented", strict=False)
 def test_embedding_export(tmp_path):
     from model.train_gat import export_embeddings
     from model.gat_model import FlavorGAT
