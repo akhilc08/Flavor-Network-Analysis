@@ -1,3 +1,9 @@
+# Large data files (too large for GitHub)
+data/foodb_2020_04_07_json/
+data/raw/recipes.csv
+data/raw/ingredients.csv
+data/raw/flavordb_cache.sqlite
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
