@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-03-PLAN.md (model/losses.py implemented, 4 loss tests xpassed)
-last_updated: "2026-03-12T18:03:07.805Z"
+stopped_at: Completed 04-01-PLAN.md (conftest.py fixture + 9 xfail test stubs, pytest exits 0)
+last_updated: "2026-03-12T18:04:47.807Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 25
-  completed_plans: 13
+  completed_plans: 15
   percent: 36
 ---
 
@@ -62,6 +62,8 @@ Progress: [████░░░░░░] 36%
 | Phase 03-graph-construction P04 | 3 | 2 tasks | 2 files |
 | Phase 03-graph-construction P04 | 45 | 3 tasks | 5 files |
 | Phase 04-model-training P03 | 10 | 1 tasks | 4 files |
+| Phase 04-model-training P02 | 7 | 1 tasks | 2 files |
+| Phase 04-model-training P01 | 6 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -110,6 +112,10 @@ Recent decisions affecting current work:
 - [Phase 03-graph-construction]: Molecule validation threshold lowered 2000→1500 to match actual FlavorDB2 coverage (1,788 molecules)
 - [Phase 04-model-training]: _bce_link_pred_loss shared helper: molecular_bce_loss and recipe_bce_loss are semantically separate but structurally identical — helper avoids duplication while keeping separate public API
 - [Phase 04-model-training]: F.normalize returns new tensor inside info_nce_loss — input z never mutated in-place; masked_fill_ on sim matrix copy is safe
+- [Phase 04-02]: FlavorGAT stores both self.dropout_p and self.dropout attributes — plan spec uses dropout_p, existing test stub checks model.dropout > 0
+- [Phase 04-02]: GATConv out_channels = hidden_channels // heads — prevents concat=True dimension explosion (post-concat dim equals hidden_channels)
+- [Phase 04-model-training]: scope='module' on tiny_hetero_graph fixture: avoids repeated tensor creation overhead across 9 tests
+- [Phase 04-model-training]: xfail(strict=False) over skip in test stubs: xpass counts as green so tests naturally promote as implementation is added
 
 ### Pending Todos
 
@@ -124,6 +130,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T18:03:07.794Z
-Stopped at: Completed 04-03-PLAN.md (model/losses.py implemented, 4 loss tests xpassed)
+Last session: 2026-03-12T18:04:47.804Z
+Stopped at: Completed 04-01-PLAN.md (conftest.py fixture + 9 xfail test stubs, pytest exits 0)
 Resume file: None

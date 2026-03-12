@@ -47,9 +47,9 @@
 
 ### Model Training
 
-- [ ] **MODEL-01**: GAT model implemented with HeteroConv wrapper: 3 layers, 8 attention heads, 256 hidden dim, separate linear projections per node type to shared 128-dim embedding space
-- [ ] **MODEL-02**: GATConv layers use add_self_loops=False on all bipartite edge types
-- [ ] **MODEL-03**: Batch normalization and dropout (0.3) applied between layers
+- [x] **MODEL-01**: GAT model implemented with HeteroConv wrapper: 3 layers, 8 attention heads, 256 hidden dim, separate linear projections per node type to shared 128-dim embedding space
+- [x] **MODEL-02**: GATConv layers use add_self_loops=False on all bipartite edge types
+- [x] **MODEL-03**: Batch normalization and dropout (0.3) applied between layers
 - [x] **MODEL-04**: Molecular loss: BCE link prediction on ingredient pairs sharing >5 flavor molecules (label=1) vs 0 shared (label=0)
 - [x] **MODEL-05**: Recipe loss: BCE link prediction on ingredient pairs co-occurring in >10 recipes (label=1)
 - [x] **MODEL-06**: InfoNCE contrastive loss with temperature τ starting at 0.1–0.2 (not 0.07); gradient clipping (max_norm=1.0) applied unconditionally; InfoNCE loss logged separately from other components
