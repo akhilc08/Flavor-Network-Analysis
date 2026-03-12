@@ -12,7 +12,7 @@ This project builds a staged ML artifact pipeline — data ingestion through a t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Environment setup and raw data ingestion; produces working conda environment and populated data/raw/
+- [x] **Phase 1: Foundation** - Environment setup and raw data ingestion; produces working conda environment and populated data/raw/ (completed 2026-03-12)
 - [ ] **Phase 2: Feature Engineering** - PubChem SMILES fetch, RDKit descriptors, and multimodal ingredient feature assembly; produces data/processed/ parquets
 - [ ] **Phase 3: Graph Construction** - Heterogeneous HeteroData graph with validation gate and leakage-free link prediction split; produces graph/hetero_data.pt
 - [ ] **Phase 4: Model Training** - 3-layer GAT with dual supervision and InfoNCE loss trained to AUC >= 0.70; produces ingredient_embeddings.pkl
@@ -106,7 +106,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 3/4 | In Progress|  |
+| 1. Foundation | 4/4 | Complete   | 2026-03-12 |
 | 2. Feature Engineering | 0/TBD | Not started | - |
 | 3. Graph Construction | 0/TBD | Not started | - |
 | 4. Model Training | 0/TBD | Not started | - |

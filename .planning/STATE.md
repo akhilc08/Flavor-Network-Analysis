@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-03-12T00:53:49.633Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-03-12T00:59:13.443Z"
 last_activity: 2026-03-12 — Completed Plan 01-02 (FlavorDB2 scraper, 935 ingredients)
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 50
 ---
 
@@ -51,6 +51,7 @@ Progress: [█████░░░░░] 50%
 
 *Updated after each plan completion*
 | Phase 01-foundation P03 | 19 | 2 tasks | 5 files |
+| Phase 01-foundation P04 | 5 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Switch from HuggingFace datasets library to direct HTTP streaming of RecipeNLG CSV: Python 3.14 incompatibility with dill requires pandas chunksize approach
 - [Phase 01-foundation]: AllRecipes Cloudflare detection must check challenge indicators (challenge-form, cf_chl_, cf-mitigated header) not mere string presence
 - [Phase 01-foundation]: AllRecipes JSON-LD @type returned as list ['Recipe'] not string — use _is_recipe_type() helper handling both forms
+- [Phase 01-foundation]: FooDB dir missing: print download instructions and return gracefully (no crash) — compliant with CC BY-NC 4.0 license and 952MB size constraint
+- [Phase 01-foundation]: Pipeline orchestrator uses direct function import (not subprocess) for cleaner exception handling and unified logging
+- [Phase 01-foundation]: token_sort_ratio used for FooDB fuzzy matching — handles word-order variants like garlic-roasted correctly (not fuzz.ratio)
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T00:53:49.629Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-03-12T00:59:13.441Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None
