@@ -52,67 +52,73 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 FOODB_DIR = "data/raw/foodb"
+FOODB_JSON_DIR = "data/foodb_2020_04_07_json"
 INGREDIENTS_CSV = "data/raw/ingredients.csv"
 MOLECULES_CSV = "data/raw/molecules.csv"
 FUZZY_THRESHOLD = 85
 
 
 # ---------------------------------------------------------------------------
-# Helper: locate FooDB CSVs
+# Helper: load a FooDB NDJSON file into a DataFrame
 # ---------------------------------------------------------------------------
 
-def find_foodb_csvs() -> tuple[str, str]:
-    """Locate Food.csv and Compound.csv inside FOODB_DIR.
+def load_ndjson(path: str) -> "pd.DataFrame":
+    """Load a newline-delimited JSON file (one object per line) into a DataFrame."""
+    records = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                records.append(json.loads(line))
+    return pd.DataFrame(records)
+
+
+# ---------------------------------------------------------------------------
+# Helper: locate FooDB data (CSV or JSON)
+# ---------------------------------------------------------------------------
+
+def find_foodb_files() -> tuple[str, str, str]:
+    """Locate Food and Compound data files (CSV or NDJSON).
 
     Returns
     -------
-    (food_path, compound_path) as strings
+    (food_path, compound_path, fmt) where fmt is "csv" or "json"
 
     Raises
     ------
-    FileNotFoundError if the expected files are not found.
+    FileNotFoundError if neither CSV nor JSON source is available.
     """
-    if not os.path.isdir(FOODB_DIR):
-        raise FileNotFoundError(
-            f"FooDB directory not found: {FOODB_DIR}\n"
-            "Please download from https://foodb.ca/downloads (CC BY-NC 4.0)\n"
-            "and extract to data/raw/foodb/"
+    # Prefer JSON directory if present
+    if os.path.isdir(FOODB_JSON_DIR):
+        food_path = os.path.join(FOODB_JSON_DIR, "Food.json")
+        compound_path = os.path.join(FOODB_JSON_DIR, "Compound.json")
+        if os.path.exists(food_path) and os.path.exists(compound_path):
+            logger.info("Using FooDB JSON directory: %s", FOODB_JSON_DIR)
+            return food_path, compound_path, "json"
+
+    # Fall back to CSV directory
+    if os.path.isdir(FOODB_DIR):
+        food_candidates = ["Food.csv", "foods.csv", "food.csv"]
+        compound_candidates = ["Compound.csv", "compounds.csv", "compound.csv"]
+
+        food_path = next(
+            (os.path.join(FOODB_DIR, n) for n in food_candidates if os.path.exists(os.path.join(FOODB_DIR, n))),
+            None,
         )
-
-    # Candidate file names (FooDB naming varies between releases)
-    food_candidates = ["Food.csv", "foods.csv", "food.csv"]
-    compound_candidates = ["Compound.csv", "compounds.csv", "compound.csv"]
-
-    food_path = None
-    for name in food_candidates:
-        candidate = os.path.join(FOODB_DIR, name)
-        if os.path.exists(candidate):
-            food_path = candidate
-            break
-
-    compound_path = None
-    for name in compound_candidates:
-        candidate = os.path.join(FOODB_DIR, name)
-        if os.path.exists(candidate):
-            compound_path = candidate
-            break
-
-    missing = []
-    if food_path is None:
-        missing.append(f"Food CSV (tried: {food_candidates})")
-    if compound_path is None:
-        missing.append(f"Compound CSV (tried: {compound_candidates})")
-
-    if missing:
-        raise FileNotFoundError(
-            f"FooDB CSVs not found in {FOODB_DIR}/. "
-            f"Missing: {', '.join(missing)}\n"
-            "Please download from https://foodb.ca/downloads and extract to data/raw/foodb/"
+        compound_path = next(
+            (os.path.join(FOODB_DIR, n) for n in compound_candidates if os.path.exists(os.path.join(FOODB_DIR, n))),
+            None,
         )
+        if food_path and compound_path:
+            logger.info("Using FooDB CSV directory: %s", FOODB_DIR)
+            return food_path, compound_path, "csv"
 
-    logger.info("Found FooDB Food CSV: %s", food_path)
-    logger.info("Found FooDB Compound CSV: %s", compound_path)
-    return food_path, compound_path
+    raise FileNotFoundError(
+        f"FooDB data not found. Expected either:\n"
+        f"  JSON: {FOODB_JSON_DIR}/Food.json + Compound.json\n"
+        f"  CSV:  {FOODB_DIR}/Food.csv + Compound.csv\n"
+        "Download from https://foodb.ca/downloads (CC BY-NC 4.0)"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -140,16 +146,14 @@ def join_foodb(force: bool = False) -> None:
         except Exception as exc:
             logger.warning("Could not read existing molecules.csv (%s) — continuing.", exc)
 
-    # --- Check FooDB dir exists; print instructions and return if not ---
-    if not os.path.isdir(FOODB_DIR):
+    # --- Check FooDB data exists; print instructions and return if not ---
+    if not os.path.isdir(FOODB_DIR) and not os.path.isdir(FOODB_JSON_DIR):
         logger.warning(
-            "FooDB directory not found: %s\n"
-            "To enrich molecules.csv with macronutrient data:\n"
-            "  1. Visit https://foodb.ca/downloads (CC BY-NC 4.0)\n"
-            "  2. Download the full database CSV archive (~952 MB)\n"
-            "  3. Extract to %s/\n"
+            "FooDB data not found. Expected either:\n"
+            "  JSON: %s/Food.json\n"
+            "  CSV:  %s/Food.csv\n"
             "Molecules.csv will not be enriched until FooDB data is available.",
-            FOODB_DIR,
+            FOODB_JSON_DIR,
             FOODB_DIR,
         )
         return
@@ -166,22 +170,22 @@ def join_foodb(force: bool = False) -> None:
     total_ingredients = len(flavordb_names)
     logger.info("Loaded %d FlavorDB2 ingredient names from %s", total_ingredients, INGREDIENTS_CSV)
 
-    # --- Load FooDB CSVs ---
+    # --- Load FooDB files (CSV or JSON) ---
     try:
-        food_path, compound_path = find_foodb_csvs()
+        food_path, compound_path, fmt = find_foodb_files()
     except FileNotFoundError as exc:
         logger.warning("%s\nSkipping FooDB join.", exc)
         return
 
-    logger.info("Loading FooDB Food CSV: %s", food_path)
-    foodb_foods = pd.read_csv(food_path, low_memory=False)
-    logger.info("FooDB Food CSV columns: %s", foodb_foods.columns.tolist())
-    logger.info("FooDB Food CSV shape: %s", foodb_foods.shape)
+    logger.info("Loading FooDB Food file: %s", food_path)
+    foodb_foods = load_ndjson(food_path) if fmt == "json" else pd.read_csv(food_path, low_memory=False)
+    logger.info("FooDB Food columns: %s", foodb_foods.columns.tolist())
+    logger.info("FooDB Food shape: %s", foodb_foods.shape)
 
-    logger.info("Loading FooDB Compound CSV: %s", compound_path)
-    foodb_compounds = pd.read_csv(compound_path, low_memory=False)
-    logger.info("FooDB Compound CSV columns: %s", foodb_compounds.columns.tolist())
-    logger.info("FooDB Compound CSV shape: %s", foodb_compounds.shape)
+    logger.info("Loading FooDB Compound file: %s", compound_path)
+    foodb_compounds = load_ndjson(compound_path) if fmt == "json" else pd.read_csv(compound_path, low_memory=False)
+    logger.info("FooDB Compound columns: %s", foodb_compounds.columns.tolist())
+    logger.info("FooDB Compound shape: %s", foodb_compounds.shape)
 
     # Detect the food name column (common names across FooDB releases)
     food_name_col = None
@@ -299,6 +303,35 @@ def join_foodb(force: bool = False) -> None:
                 "moisture_content": moisture,
             }
 
+    # --- Build pubchem_id → foodb_food_id lookup via ingredients.csv ---
+    # ingredients.csv has a molecules_json column with pubchem_ids for each ingredient.
+    # For each matched FlavorDB2 ingredient, mark its molecules as foodb_matched=True.
+    if not os.path.exists(INGREDIENTS_CSV):
+        logger.error("ingredients.csv not found at %s. Run Plan 01-02 first.", INGREDIENTS_CSV)
+        return
+
+    ingredients_df = pd.read_csv(INGREDIENTS_CSV)
+    pubchem_to_foodb: dict[int, int | None] = {}
+
+    for _, ing_row in ingredients_df.iterrows():
+        ing_name = ing_row.get("name", "")
+        if ing_name not in matches:
+            continue
+        food_id = matches[ing_name]["foodb_food_id"]
+        mols_raw = ing_row.get("molecules_json", "")
+        if not mols_raw or not isinstance(mols_raw, str):
+            continue
+        try:
+            mols = json.loads(mols_raw)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        for mol in mols:
+            pid = mol.get("pubchem_id")
+            if pid is not None:
+                pubchem_to_foodb[int(pid)] = food_id
+
+    logger.info("pubchem_ids with FooDB match: %d", len(pubchem_to_foodb))
+
     # --- Enrich molecules.csv ---
     if not os.path.exists(MOLECULES_CSV):
         logger.error("molecules.csv not found at %s. Run Plan 01-02 first.", MOLECULES_CSV)
@@ -307,59 +340,30 @@ def join_foodb(force: bool = False) -> None:
     molecules_df = pd.read_csv(MOLECULES_CSV)
     logger.info("Loaded molecules.csv: %s rows", len(molecules_df))
 
-    # molecules.csv has pubchem_id, common_name, flavor_profile
-    # We enrich with foodb_matched, foodb_food_id, macronutrients_json, moisture_content
-    # Match is via common_name → FlavorDB2 ingredient name → foodb match
-
-    # Build a lookup: ingredient_name → foodb info
-    # molecules don't directly have ingredient names — they have common_name (molecule name)
-    # The join is molecule_name → ingredient_name (fuzzy) → FooDB food
-    # But per plan: enrich molecules by checking if molecule's common_name is in flavordb matches
-    # More precisely: add foodb_matched bool and related columns per molecule row
-
-    # Strategy: fuzzy match molecule common_name against matched FlavorDB ingredient names
-    # (which in turn are matched to FooDB foods)
-    matched_ingredient_names = set(matches.keys())
-
     foodb_matched_list = []
     foodb_food_id_list = []
     macronutrients_json_list = []
     moisture_content_list = []
 
     for _, mol_row in molecules_df.iterrows():
-        mol_name = mol_row.get("common_name", "")
-        if not mol_name or not isinstance(mol_name, str):
+        pid = mol_row.get("pubchem_id")
+        try:
+            pid = int(pid) if pd.notna(pid) else None
+        except (ValueError, TypeError):
+            pid = None
+
+        if pid is not None and pid in pubchem_to_foodb:
+            food_id = pubchem_to_foodb[pid]
+            nutrient_data = food_nutrients.get(food_id, {}) if food_id is not None else {}
+            foodb_matched_list.append(True)
+            foodb_food_id_list.append(food_id)
+            macronutrients_json_list.append(json.dumps(nutrient_data.get("macronutrients", {})))
+            moisture_content_list.append(nutrient_data.get("moisture_content"))
+        else:
             foodb_matched_list.append(False)
             foodb_food_id_list.append(None)
             macronutrients_json_list.append(None)
             moisture_content_list.append(None)
-            continue
-
-        # Check if molecule common_name fuzzy-matches any FlavorDB ingredient that was matched to FooDB
-        result = process.extractOne(
-            mol_name,
-            list(matched_ingredient_names),
-            scorer=fuzz.token_sort_ratio,
-        ) if matched_ingredient_names else None
-
-        if result is not None:
-            ingredient_match, score, _ = result
-            if score >= FUZZY_THRESHOLD:
-                match_info = matches[ingredient_match]
-                food_id = match_info["foodb_food_id"]
-                nutrient_data = food_nutrients.get(food_id, {}) if food_id is not None else {}
-                foodb_matched_list.append(True)
-                foodb_food_id_list.append(food_id)
-                macronutrients_json_list.append(
-                    json.dumps(nutrient_data.get("macronutrients", {}))
-                )
-                moisture_content_list.append(nutrient_data.get("moisture_content"))
-                continue
-
-        foodb_matched_list.append(False)
-        foodb_food_id_list.append(None)
-        macronutrients_json_list.append(None)
-        moisture_content_list.append(None)
 
     molecules_df["foodb_matched"] = foodb_matched_list
     molecules_df["foodb_food_id"] = foodb_food_id_list

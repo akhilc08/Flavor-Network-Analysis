@@ -14,7 +14,6 @@ PROJECT_ROOT = Path(__file__).parent.parent
 MOLECULES_CSV = PROJECT_ROOT / "data" / "raw" / "molecules.csv"
 
 
-@pytest.mark.skip(reason="FooDB join not yet run — execute Plan 01-03 first")
 def test_join_count():
     """Verify that the FooDB join produced a molecules.csv with sufficient matches.
 
