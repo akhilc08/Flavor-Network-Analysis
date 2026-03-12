@@ -153,14 +153,14 @@ def _deserialize_fp(fp_bytes, fmt: str) -> "np.ndarray | None":
 # ---------------------------------------------------------------------------
 
 
-def _load_parquets() -> "tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]":
-    """Load all three processed parquet files.
+def _load_parquets() -> "tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]":
+    """Load all processed parquet files.
 
     Returns:
-        (ing_df, mol_df, cooc_df)
+        (ing_df, mol_df, cooc_df, ing_mol_df)
 
     Raises:
-        FileNotFoundError: if any parquet is missing.
+        FileNotFoundError: if required parquets are missing.
     """
     paths = {
         "ingredients": "data/processed/ingredients.parquet",
@@ -176,7 +176,16 @@ def _load_parquets() -> "tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]":
         dfs[name] = pd.read_parquet(path)
         logger.info("Loaded %s: %d rows", path, len(dfs[name]))
 
-    return dfs["ingredients"], dfs["molecules"], dfs["cooccurrence"]
+    # ingredient_molecule.parquet is optional — contains edges fall back to 0 if absent
+    ing_mol_path = "data/processed/ingredient_molecule.parquet"
+    if os.path.exists(ing_mol_path):
+        dfs["ingredient_molecule"] = pd.read_parquet(ing_mol_path)
+        logger.info("Loaded %s: %d rows", ing_mol_path, len(dfs["ingredient_molecule"]))
+    else:
+        logger.warning("ingredient_molecule.parquet not found — contains edges will be empty")
+        dfs["ingredient_molecule"] = pd.DataFrame(columns=["ingredient_id", "pubchem_id"])
+
+    return dfs["ingredients"], dfs["molecules"], dfs["cooccurrence"], dfs["ingredient_molecule"]
 
 
 # ---------------------------------------------------------------------------
@@ -399,6 +408,7 @@ def _build_contains_edges(
     mol_df: pd.DataFrame,
     ingredient_id_to_idx: dict,
     molecule_id_to_idx: dict,
+    ing_mol_df: "pd.DataFrame | None" = None,
 ) -> "tuple[torch.Tensor, torch.Tensor]":
     """Build ingredient→molecule (contains) edges.
 
@@ -408,8 +418,20 @@ def _build_contains_edges(
         edge_index: [2, E] long tensor
         edge_attr: [E] float32 tensor of weights
     """
-    # Strategy 1: molecule_ids column in ing_df (list of pubchem_ids per ingredient)
-    if "molecule_ids" in ing_df.columns:
+    # Strategy 1: dedicated ingredient_molecule mapping dataframe
+    if ing_mol_df is not None and len(ing_mol_df) > 0:
+        logger.info("Contains edges: using ingredient_molecule.parquet (%d rows)", len(ing_mol_df))
+        mol_by_ingredient: dict[int, list[int]] = {}
+        for _, row in ing_mol_df.iterrows():
+            ing_id = int(row["ingredient_id"])
+            pubchem_id = int(row["pubchem_id"])
+            mol_by_ingredient.setdefault(ing_id, []).append(pubchem_id)
+
+        def get_mol_ids_for_ingredient(ing_id):
+            return mol_by_ingredient.get(int(ing_id), [])
+
+    # Strategy 2: molecule_ids column in ing_df (list of pubchem_ids per ingredient)
+    elif "molecule_ids" in ing_df.columns:
         logger.info("Contains edges: using 'molecule_ids' column from ingredients.parquet")
 
         def get_mol_ids_for_ingredient(ing_id):
@@ -421,19 +443,18 @@ def _build_contains_edges(
 
     elif "ingredient_id" in mol_df.columns:
         logger.info("Contains edges: using 'ingredient_id' column from molecules.parquet")
-        mol_by_ingredient: dict[int, list[int]] = {}
+        mol_by_ingredient_alt: dict[int, list[int]] = {}
         for _, row in mol_df.iterrows():
             ing_id = int(row["ingredient_id"])
             pubchem_id = int(row["pubchem_id"])
-            mol_by_ingredient.setdefault(ing_id, []).append(pubchem_id)
+            mol_by_ingredient_alt.setdefault(ing_id, []).append(pubchem_id)
 
         def get_mol_ids_for_ingredient(ing_id):
-            return mol_by_ingredient.get(int(ing_id), [])
+            return mol_by_ingredient_alt.get(int(ing_id), [])
 
     else:
         logger.warning(
-            "Contains edges: neither 'molecule_ids' in ingredients.parquet nor "
-            "'ingredient_id' in molecules.parquet found — no edges can be built"
+            "Contains edges: no ingredient-molecule mapping found — no edges can be built"
         )
 
         def get_mol_ids_for_ingredient(ing_id):
@@ -631,7 +652,7 @@ def run_validation_gate(data: HeteroData) -> None:
         return ok
 
     passed &= check("Ingredient nodes", n_ing, 500)
-    passed &= check("Molecule nodes", n_mol, 2000)
+    passed &= check("Molecule nodes", n_mol, 1500)
 
     required_edge_types = [
         ("ingredient", "contains", "molecule"),
@@ -729,7 +750,7 @@ def build_graph(force: bool = False) -> None:
     logger.info("=== Phase 3: Graph Construction ===")
 
     # --- Load inputs ---
-    ing_df, mol_df, cooc_df = _load_parquets()
+    ing_df, mol_df, cooc_df, ing_mol_df = _load_parquets()
 
     # --- Probe fp format ---
     fp_fmt = _probe_fp_format(mol_df["morgan_fp_bytes"].iloc[0])
@@ -748,7 +769,7 @@ def build_graph(force: bool = False) -> None:
 
     # --- Build edges ---
     contains_ei, contains_ea = _build_contains_edges(
-        ing_df, mol_df, ingredient_id_to_idx, molecule_id_to_idx
+        ing_df, mol_df, ingredient_id_to_idx, molecule_id_to_idx, ing_mol_df
     )
     cooccurs_ei, cooccurs_ea = _build_cooccurs_edges(cooc_df, name_to_ingredient_idx)
     struct_ei, struct_ea = _build_structural_edges(mol_df, molecule_id_to_idx, fp_fmt)

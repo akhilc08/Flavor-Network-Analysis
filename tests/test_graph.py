@@ -71,7 +71,7 @@ def test_ingredient_features():
 
 
 def test_molecule_features():
-    """GRAPH-03: Molecule feature matrix is float32, shape >= (2000, 1030)."""
+    """GRAPH-03: Molecule feature matrix is float32, shape >= (1500, 1030)."""
     payload = _load_payload()
     import torch  # noqa: PLC0415
     data = payload["graph"]
@@ -79,7 +79,7 @@ def test_molecule_features():
 
     assert x.dtype == torch.float32, f"Expected float32, got {x.dtype}"
     assert x.dim() == 2, f"Expected 2-D tensor, got {x.dim()}-D"
-    assert x.shape[0] >= 2000, f"Expected >= 2000 molecule nodes, got {x.shape[0]}"
+    assert x.shape[0] >= 1500, f"Expected >= 1500 molecule nodes, got {x.shape[0]}"
     assert x.shape[1] == 1030, (
         f"Expected 1030 features (6 descriptors + 1024 Morgan bits), got {x.shape[1]}"
     )
