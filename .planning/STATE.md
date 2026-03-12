@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-03-12T02:46:22.256Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-03-12T03:02:48.736Z"
 last_activity: 2026-03-11 — Completed Plan 02-03 (RDKit descriptors, Morgan fingerprints, Tanimoto edges)
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 25
-  completed_plans: 7
+  completed_plans: 8
   percent: 29
 ---
 
@@ -55,6 +55,7 @@ Progress: [███░░░░░░░] 29%
 | Phase 02-feature-engineering P01 | 2 | 1 tasks | 1 files |
 | Phase 02-feature-engineering P03 | 4 | 2 tasks | 3 files |
 | Phase 02-feature-engineering P03 | 4 | 2 tasks | 3 files |
+| Phase 02-feature-engineering P04 | 17 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 02-03]: Use rdFingerprintGenerator.GetMorganGenerator instead of deprecated GetMorganFingerprintAsBitVect — identical fingerprints, no warnings
 - [Phase 02-03]: fps_and_ids tuple order is (fp, pubchem_id) — matches test scaffold (fp_a, 1) ordering, not plan description (int, object)
 - [Phase 02-03]: Morgan fingerprint stored as 1024-byte ASCII bit string; Phase 3 decode: (np.frombuffer(fp_bytes, dtype=np.uint8) == ord('1')).astype(np.float32)
+- [Phase 02-feature-engineering]: encode_flavor_profile keeps string signature (test-authoritative); build_features() unions molecule tags internally before encoding
+- [Phase 02-feature-engineering]: cooccurrence.parquet fallback: when recipes.csv unavailable, compute co-occurrence from AllRecipes (76 recipes, 5,824 pairs); full version requires scrape_recipes (15-45 min)
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T02:46:22.253Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-03-12T03:02:48.732Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
