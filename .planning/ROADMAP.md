@@ -138,7 +138,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete   | 2026-03-12 |
-| 2. Feature Engineering | 2/4 | In Progress|  |
+| 2. Feature Engineering | 3/4 | In Progress|  |
 | 3. Graph Construction | 0/TBD | Not started | - |
 | 4. Model Training | 0/4 | Planned | - |
 | 5. Scoring and Active Learning | 0/3 | Planned | - |

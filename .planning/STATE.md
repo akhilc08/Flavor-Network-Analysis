@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-12T02:28:10.000Z"
-last_activity: 2026-03-12 — Completed Plan 02-02 (SMILES fetch, 1788-entry pubchem_cache.json)
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-03-12T02:46:22.256Z"
+last_activity: 2026-03-11 — Completed Plan 02-03 (RDKit descriptors, Morgan fingerprints, Tanimoto edges)
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 24
-  completed_plans: 6
-  percent: 25
+  total_plans: 25
+  completed_plans: 7
+  percent: 29
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 2 of 6 (Feature Engineering)
-Plan: 2 of 4 in current phase (02-02 complete)
+Plan: 3 of 4 in current phase (02-03 complete)
 Status: In progress
-Last activity: 2026-03-12 — Completed Plan 02-02 (SMILES fetch, 1788-entry pubchem_cache.json)
+Last activity: 2026-03-11 — Completed Plan 02-03 (RDKit descriptors, Morgan fingerprints, Tanimoto edges)
 
-Progress: [██░░░░░░░░] 25%
+Progress: [███░░░░░░░] 29%
 
 ## Performance Metrics
 
@@ -53,6 +53,8 @@ Progress: [██░░░░░░░░] 25%
 | Phase 01-foundation P03 | 19 | 2 tasks | 5 files |
 | Phase 01-foundation P04 | 5 | 2 tasks | 2 files |
 | Phase 02-feature-engineering P01 | 2 | 1 tasks | 1 files |
+| Phase 02-feature-engineering P03 | 4 | 2 tasks | 3 files |
+| Phase 02-feature-engineering P03 | 4 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -80,6 +82,12 @@ Recent decisions affecting current work:
 - [02-02]: FlavorDB2 molecules_json is the primary SMILES source (1788/1788 coverage); PubChem is gap-fill only — happy path completes with zero network calls
 - [02-02]: 4xx responses stored as null (legitimate miss); 5xx raises exception to prevent non-deterministic null entries
 - [02-02]: Cache keys are strings (json.dump int→str conversion); gate check uses str(id) comparison
+- [02-03]: Use rdFingerprintGenerator.GetMorganGenerator instead of deprecated GetMorganFingerprintAsBitVect — identical fingerprints, no warnings
+- [02-03]: fps_and_ids tuple order is (fp, pubchem_id) — matches test scaffold (fp_a, 1) ordering, not plan description (int, object)
+- [02-03]: Morgan fingerprint stored as 1024-byte ASCII bit string; Phase 3 decode: (np.frombuffer(fp_bytes, dtype=np.uint8) == ord('1')).astype(np.float32)
+- [Phase 02-03]: Use rdFingerprintGenerator.GetMorganGenerator instead of deprecated GetMorganFingerprintAsBitVect — identical fingerprints, no warnings
+- [Phase 02-03]: fps_and_ids tuple order is (fp, pubchem_id) — matches test scaffold (fp_a, 1) ordering, not plan description (int, object)
+- [Phase 02-03]: Morgan fingerprint stored as 1024-byte ASCII bit string; Phase 3 decode: (np.frombuffer(fp_bytes, dtype=np.uint8) == ord('1')).astype(np.float32)
 
 ### Pending Todos
 
@@ -94,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T02:28:10.000Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-03-12T02:46:22.253Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
