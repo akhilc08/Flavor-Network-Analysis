@@ -17,8 +17,8 @@
 - [x] **DATA-01**: FlavorDB2 scraper hits entities_json?id=1–1000, handles 404s gracefully, caches all responses locally on first run
 - [x] **DATA-02**: Scraper extracts ingredient name, category, and flavor molecule list (pubchem_id, common_name, flavor_profile) per entity
 - [ ] **DATA-03**: FooDB compounds and foods CSVs downloaded; joined to ingredients via fuzzy name matching (RapidFuzz token_sort_ratio > 85) to enrich with macronutrients, moisture content, additional compounds
-- [ ] **DATA-04**: RecipeNLG dataset loaded via HuggingFace in streaming/chunked mode (not fully into RAM) and processed into ingredient co-occurrence counts written to disk
-- [ ] **DATA-05**: AllRecipes scraper fetches top 500 recipes from 10 categories (Italian, Asian, Mexican, French, American, Indian, Mediterranean, Middle Eastern, Japanese, Thai); handles bot-blocking gracefully and logs failure rate; user can manually supply data if scraper is blocked
+- [x] **DATA-04**: RecipeNLG dataset loaded via HuggingFace in streaming/chunked mode (not fully into RAM) and processed into ingredient co-occurrence counts written to disk
+- [x] **DATA-05**: AllRecipes scraper fetches top 500 recipes from 10 categories (Italian, Asian, Mexican, French, American, Indian, Mediterranean, Middle Eastern, Japanese, Thai); handles bot-blocking gracefully and logs failure rate; user can manually supply data if scraper is blocked
 - [ ] **DATA-06**: Raw data saved as ingredients.csv, molecules.csv, recipes.csv in data/raw/
 
 ### Feature Engineering

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-03-12T00:32:27.600Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-03-12T00:53:49.633Z"
 last_activity: 2026-03-12 — Completed Plan 01-02 (FlavorDB2 scraper, 935 ingredients)
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 50
 ---
 
@@ -50,6 +50,7 @@ Progress: [█████░░░░░] 50%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-foundation P03 | 19 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 01-02]: Cache 404 responses alongside 200s in FlavorDB2 scraper: entity gaps are permanent, no benefit to re-fetching
 - [Phase 01-02]: Stop FlavorDB scrape after 10 consecutive 404s: avoids tail thrashing; actual stop at entity 988
 - [Phase 01-02]: Store molecules_json as JSON string per ingredient row: defers normalization to Phase 2 feature engineering
+- [Phase 01-foundation]: Switch from HuggingFace datasets library to direct HTTP streaming of RecipeNLG CSV: Python 3.14 incompatibility with dill requires pandas chunksize approach
+- [Phase 01-foundation]: AllRecipes Cloudflare detection must check challenge indicators (challenge-form, cf_chl_, cf-mitigated header) not mere string presence
+- [Phase 01-foundation]: AllRecipes JSON-LD @type returned as list ['Recipe'] not string — use _is_recipe_type() helper handling both forms
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T00:32:27.598Z
-Stopped at: Completed 01-02-PLAN.md
-Resume file: .planning/phases/01-foundation/01-03-PLAN.md
+Last session: 2026-03-12T00:53:49.629Z
+Stopped at: Completed 01-03-PLAN.md
+Resume file: None
