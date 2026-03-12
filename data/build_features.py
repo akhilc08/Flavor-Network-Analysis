@@ -666,7 +666,7 @@ def build_features(force: bool = False) -> None:
     ingredients_out_df.to_parquet(INGREDIENTS_PARQUET, index=False, engine="pyarrow")
     logger.info("Wrote %s (%d rows, %d columns)", INGREDIENTS_PARQUET, len(ingredients_out_df), len(ingredients_out_df.columns))
 
-    # Step 5: Carry cooccurrence from recipes.csv
+    # Step 5: Carry cooccurrence from recipes.csv (or build minimal from AllRecipes)
     if RECIPES_CSV.exists():
         logger.info("Loading recipes.csv for cooccurrence (may be large)...")
         chunks = []
@@ -675,11 +675,37 @@ def build_features(force: bool = False) -> None:
         cooccurrence_df = pd.concat(chunks, ignore_index=True)
         cooccurrence_df.to_parquet(COOCCURRENCE_PARQUET, index=False, engine="pyarrow")
         logger.info("Wrote %s (%d rows)", COOCCURRENCE_PARQUET, len(cooccurrence_df))
+    elif ALLRECIPES_CSV.exists():
+        # Fallback: build minimal co-occurrence counts from AllRecipes data.
+        # Full co-occurrence requires running scrape_recipes.py (15-45 min, RecipeNLG).
+        # This placeholder ensures cooccurrence.parquet exists with the correct schema.
+        logger.warning(
+            "recipes.csv not found — building minimal cooccurrence.parquet from AllRecipes data. "
+            "For full co-occurrence, run: conda run -n flavor-network python run_pipeline.py "
+            "--skip-scrape --skip-foodb --skip-smiles --skip-features (after scrape_recipes completes)"
+        )
+        from itertools import combinations
+        from collections import Counter
+        allrecipes_df = pd.read_csv(ALLRECIPES_CSV)
+        pair_counts: Counter = Counter()
+        for _, recipe_row in allrecipes_df.iterrows():
+            ingr_str = str(recipe_row.get("ingredients", ""))
+            ingrs = [i.strip() for i in ingr_str.split(",") if i.strip()]
+            for a, b in combinations(sorted(ingrs), 2):
+                pair_counts[(a, b)] += 1
+        cooc_rows = [{"ingredient_a": a, "ingredient_b": b, "count": c} for (a, b), c in pair_counts.items()]
+        cooccurrence_df = pd.DataFrame(cooc_rows) if cooc_rows else pd.DataFrame(
+            columns=["ingredient_a", "ingredient_b", "count"]
+        )
+        cooccurrence_df.to_parquet(COOCCURRENCE_PARQUET, index=False, engine="pyarrow")
+        logger.info(
+            "Wrote minimal %s (%d pairs from AllRecipes; full version requires recipes.csv)",
+            COOCCURRENCE_PARQUET,
+            len(cooccurrence_df),
+        )
     else:
         logger.warning(
-            "recipes.csv not found at %s — cooccurrence.parquet NOT written. "
-            "Run: conda run -n flavor-network python run_pipeline.py --skip-scrape --skip-foodb --skip-smiles",
-            RECIPES_CSV,
+            "Neither recipes.csv nor AllRecipes CSV found — cooccurrence.parquet NOT written."
         )
 
     # Log summary

@@ -6,6 +6,7 @@ Stages:
     2. Recipe co-occurrence → data/raw/recipes.csv
     3. FooDB fuzzy join   → enriches data/raw/molecules.csv
     4. SMILES fetch       → data/raw/pubchem_cache.json
+    5. Feature engineering → data/processed/*.parquet (molecules, tanimoto, ingredients, cooccurrence)
 
 Usage:
     python run_pipeline.py                          # run all stages
@@ -13,6 +14,7 @@ Usage:
     python run_pipeline.py --skip-foodb             # skip FooDB join stage
     python run_pipeline.py --skip-recipes           # skip recipe co-occurrence stage
     python run_pipeline.py --skip-smiles            # skip SMILES fetch stage
+    python run_pipeline.py --skip-features          # skip feature engineering stage
     python run_pipeline.py --force                  # re-run all stages even if outputs exist
 """
 
@@ -73,11 +75,18 @@ def _import_stages():
         logger.error("Cannot import fetch_smiles: %s", exc)
         fetch_smiles = None
 
+    try:
+        from data.build_features import build_features
+    except ImportError as exc:
+        logger.error("Cannot import build_features: %s", exc)
+        build_features = None
+
     return {
         "scrape_flavordb": scrape_flavordb,
         "scrape_recipes": scrape_recipes,
         "join_foodb": join_foodb,
         "fetch_smiles": fetch_smiles,
+        "build_features": build_features,
     }
 
 
@@ -91,6 +100,10 @@ def _print_summary() -> None:
     molecules_path = "data/raw/molecules.csv"
     recipes_path = "data/raw/recipes.csv"
     smiles_cache_path = "data/raw/pubchem_cache.json"
+    ingredients_parquet_path = "data/processed/ingredients.parquet"
+    cooccurrence_parquet_path = "data/processed/cooccurrence.parquet"
+    molecules_parquet_path = "data/processed/molecules.parquet"
+    tanimoto_parquet_path = "data/processed/tanimoto_edges.parquet"
 
     # Gather stats for each file
     def _read_stat(path: str) -> str | int:
@@ -142,17 +155,37 @@ def _print_summary() -> None:
     n_molecules_str = f"{n_molecules:,}" if isinstance(n_molecules, int) else str(n_molecules)
     n_recipes_str = f"{n_recipes:,}" if isinstance(n_recipes, int) else str(n_recipes)
 
+    # Processed parquet stats
+    def _read_parquet_stat(path: str) -> str:
+        if not os.path.exists(path):
+            return "NOT YET CREATED"
+        try:
+            import pyarrow.parquet as pq
+            pf = pq.read_metadata(path)
+            return f"{pf.num_rows:,} rows"
+        except Exception:
+            return "EXISTS"
+
+    ingr_parquet_info = _read_parquet_stat(ingredients_parquet_path)
+    cooc_parquet_info = _read_parquet_stat(cooccurrence_parquet_path)
+    mol_parquet_info = _read_parquet_stat(molecules_parquet_path)
+    tan_parquet_info = _read_parquet_stat(tanimoto_parquet_path)
+
     print()
     print("=== Pipeline Summary ===")
     print(f"FlavorDB:    {n_ingredients_str} ingredients, {n_molecules_str} molecules")
     print(f"FooDB:       {foodb_info}")
     print(f"Recipes:     {n_recipes_str} co-occurrence pairs")
     print(f"SMILES:      {smiles_info}")
+    print(f"Features:    ingredients.parquet={ingr_parquet_info}, molecules.parquet={mol_parquet_info}")
+    print(f"             tanimoto_edges.parquet={tan_parquet_info}, cooccurrence.parquet={cooc_parquet_info}")
     print()
     print(f"Output:      {ingredients_path:<38} [{_fmt_row(n_ingredients)}]")
     print(f"             {molecules_path:<38} [{_fmt_row(n_molecules)}]")
     print(f"             {recipes_path:<38} [{_fmt_row(n_recipes)}]")
     print(f"             {smiles_cache_path:<38} [smiles_fetch]")
+    print(f"             {ingredients_parquet_path:<38} [{ingr_parquet_info}]")
+    print(f"             {cooccurrence_parquet_path:<38} [{cooc_parquet_info}]")
     print("========================")
     print()
 
@@ -240,6 +273,20 @@ def main(args: argparse.Namespace) -> None:
                     traceback.format_exc(),
                 )
 
+    # --- Phase 2: Feature engineering ---
+    if args.skip_features:
+        logger.info("[SKIP] build_features (--skip-features)")
+    else:
+        build_features_fn = stages.get("build_features")
+        if build_features_fn is None:
+            logger.error("[SKIP] build_features — import failed")
+        else:
+            logger.info("--- Phase 2: Feature engineering ---")
+            try:
+                build_features_fn(force=args.force)
+            except Exception as e:
+                logger.error("build_features failed: %s", e)
+
     elapsed = time.time() - pipeline_start
     logger.info("=== Pipeline complete (%.1f s) ===", elapsed)
 
@@ -253,17 +300,19 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Stages (in order):
-  1. FlavorDB2 scraper   → data/raw/ingredients.csv + data/raw/molecules.csv
+  1. FlavorDB2 scraper    → data/raw/ingredients.csv + data/raw/molecules.csv
   2. Recipe co-occurrence → data/raw/recipes.csv
-  3. FooDB fuzzy join    → enriches data/raw/molecules.csv
-  4. SMILES fetch        → data/raw/pubchem_cache.json
+  3. FooDB fuzzy join     → enriches data/raw/molecules.csv
+  4. SMILES fetch         → data/raw/pubchem_cache.json
+  5. Feature engineering  → data/processed/*.parquet
 
 Examples:
-  python run_pipeline.py                   # run all stages
-  python run_pipeline.py --skip-scrape     # skip FlavorDB2 (already scraped)
-  python run_pipeline.py --skip-foodb      # skip FooDB join (no FooDB data)
-  python run_pipeline.py --skip-smiles     # skip SMILES fetch (cache already complete)
-  python run_pipeline.py --force           # re-run all stages from scratch
+  python run_pipeline.py                       # run all stages
+  python run_pipeline.py --skip-scrape         # skip FlavorDB2 (already scraped)
+  python run_pipeline.py --skip-foodb          # skip FooDB join (no FooDB data)
+  python run_pipeline.py --skip-smiles         # skip SMILES fetch (cache already complete)
+  python run_pipeline.py --skip-features       # skip feature engineering (parquets exist)
+  python run_pipeline.py --force               # re-run all stages from scratch
 """,
     )
     parser.add_argument(
@@ -285,6 +334,11 @@ Examples:
         "--skip-smiles",
         action="store_true",
         help="Skip SMILES fetch stage (pubchem_cache.json already complete).",
+    )
+    parser.add_argument(
+        "--skip-features",
+        action="store_true",
+        help="Skip feature engineering stage (all 4 parquets already exist).",
     )
     parser.add_argument(
         "--force",
