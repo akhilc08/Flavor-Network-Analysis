@@ -390,6 +390,223 @@ def _build_molecule_features(mol_df: pd.DataFrame, fp_fmt: str) -> torch.Tensor:
 
 
 # ---------------------------------------------------------------------------
+# Edge constructors
+# ---------------------------------------------------------------------------
+
+
+def _build_contains_edges(
+    ing_df: pd.DataFrame,
+    mol_df: pd.DataFrame,
+    ingredient_id_to_idx: dict,
+    molecule_id_to_idx: dict,
+) -> "tuple[torch.Tensor, torch.Tensor]":
+    """Build ingredient→molecule (contains) edges.
+
+    Weight: FooDB concentration if available, else 1.0.
+
+    Returns:
+        edge_index: [2, E] long tensor
+        edge_attr: [E] float32 tensor of weights
+    """
+    # Strategy 1: molecule_ids column in ing_df (list of pubchem_ids per ingredient)
+    if "molecule_ids" in ing_df.columns:
+        logger.info("Contains edges: using 'molecule_ids' column from ingredients.parquet")
+
+        def get_mol_ids_for_ingredient(ing_id):
+            rows = ing_df[ing_df["ingredient_id"] == ing_id]
+            if rows.empty:
+                return []
+            mol_ids = rows.iloc[0].get("molecule_ids", []) or []
+            return [int(mid) for mid in mol_ids]
+
+    elif "ingredient_id" in mol_df.columns:
+        logger.info("Contains edges: using 'ingredient_id' column from molecules.parquet")
+        mol_by_ingredient: dict[int, list[int]] = {}
+        for _, row in mol_df.iterrows():
+            ing_id = int(row["ingredient_id"])
+            pubchem_id = int(row["pubchem_id"])
+            mol_by_ingredient.setdefault(ing_id, []).append(pubchem_id)
+
+        def get_mol_ids_for_ingredient(ing_id):
+            return mol_by_ingredient.get(int(ing_id), [])
+
+    else:
+        logger.warning(
+            "Contains edges: neither 'molecule_ids' in ingredients.parquet nor "
+            "'ingredient_id' in molecules.parquet found — no edges can be built"
+        )
+
+        def get_mol_ids_for_ingredient(ing_id):
+            return []
+
+    # Build concentration lookup: (ingredient_id, pubchem_id) -> concentration
+    concentration_lookup: dict[tuple, float] = {}
+    if "concentration" in mol_df.columns and "ingredient_id" in mol_df.columns:
+        logger.info("Contains edges: using FooDB concentration column for weights")
+        for _, row in mol_df.iterrows():
+            key = (int(row["ingredient_id"]), int(row["pubchem_id"]))
+            conc = row.get("concentration")
+            if conc is not None and not pd.isna(conc):
+                try:
+                    concentration_lookup[key] = float(conc)
+                except (ValueError, TypeError):
+                    pass
+    else:
+        logger.info("Contains edges: no concentration column found, using 1.0 for all weights")
+
+    src_indices, dst_indices, weights = [], [], []
+    ingredients_iter = ing_df.reset_index(drop=True).itertuples()
+    for row in tqdm(ingredients_iter, desc="Contains edges", total=len(ing_df)):
+        ing_id = int(row.ingredient_id)
+        mol_pubchem_ids = get_mol_ids_for_ingredient(ing_id)
+        for pubchem_id in mol_pubchem_ids:
+            if pubchem_id not in molecule_id_to_idx:
+                continue
+            src_indices.append(ingredient_id_to_idx[ing_id])
+            dst_indices.append(molecule_id_to_idx[pubchem_id])
+            w = concentration_lookup.get((ing_id, pubchem_id), 1.0)
+            weights.append(float(w) if w and float(w) > 0 else 1.0)
+
+    if not src_indices:
+        logger.warning("Contains edges: 0 edges built — check ingredient-molecule membership data")
+        return torch.zeros((2, 0), dtype=torch.long), torch.zeros(0, dtype=torch.float32)
+
+    edge_index = torch.tensor([src_indices, dst_indices], dtype=torch.long)
+    edge_attr = torch.tensor(weights, dtype=torch.float32)
+    logger.info("Contains edges: %d edges built", edge_index.shape[1])
+    return edge_index, edge_attr
+
+
+def _build_cooccurs_edges(
+    cooc_df: pd.DataFrame,
+    name_to_ingredient_idx: dict,
+) -> "tuple[torch.Tensor, torch.Tensor]":
+    """Build ingredient↔ingredient (co_occurs) edges.
+
+    Weight: count / max_count, normalized to [0, 1].
+    Logs match rate; warns if match rate < 80%.
+
+    Returns:
+        edge_index: [2, E] long tensor
+        edge_attr: [E] float32 tensor of normalized weights
+    """
+    max_count = cooc_df["count"].max()
+    src_indices, dst_indices, weights = [], [], []
+    skip_count = 0
+
+    for row in tqdm(cooc_df.itertuples(), desc="Co-occurs edges", total=len(cooc_df)):
+        a_idx = name_to_ingredient_idx.get(str(row.ingredient_a).lower().strip())
+        b_idx = name_to_ingredient_idx.get(str(row.ingredient_b).lower().strip())
+        if a_idx is None or b_idx is None:
+            skip_count += 1
+            continue
+        src_indices.append(a_idx)
+        dst_indices.append(b_idx)
+        weights.append(float(row.count) / float(max_count))
+
+    total = len(cooc_df)
+    match_rate = 1.0 - (skip_count / total if total > 0 else 0)
+    logger.info(
+        "Co-occurs edges: %d built, %d skipped (match rate %.1f%%)",
+        len(src_indices), skip_count, match_rate * 100,
+    )
+    if match_rate < 0.80:
+        logger.warning(
+            "Co-occurs name match rate %.1f%% < 80%% — ingredient names in cooccurrence.parquet "
+            "may not align with ingredients.parquet. Check name normalization.",
+            match_rate * 100,
+        )
+
+    if not src_indices:
+        return torch.zeros((2, 0), dtype=torch.long), torch.zeros(0, dtype=torch.float32)
+
+    edge_index = torch.tensor([src_indices, dst_indices], dtype=torch.long)
+    edge_attr = torch.tensor(weights, dtype=torch.float32)
+    return edge_index, edge_attr
+
+
+def _build_structural_edges(
+    mol_df: pd.DataFrame,
+    molecule_id_to_idx: dict,
+    fp_fmt: str,
+    threshold: float = 0.7,
+) -> "tuple[torch.Tensor, torch.Tensor]":
+    """Build molecule↔molecule (structurally_similar) edges via Tanimoto similarity.
+
+    Uses BulkTanimotoSimilarity lower-triangle loop. Only pairs above threshold are retained.
+    Edges are made undirected by appending reverse edges.
+
+    Returns:
+        edge_index: [2, E] long tensor (undirected: E = 2 * n_pairs_above_threshold)
+        edge_attr: [E] float32 tensor of similarity values
+    """
+    # Deserialize all fps upfront; None for failed/missing molecules
+    fps_list = []
+    mol_idx_list = []
+    for i, row in enumerate(mol_df.itertuples()):
+        pubchem_id = getattr(row, "pubchem_id", None)
+        if pubchem_id is None or int(pubchem_id) not in molecule_id_to_idx:
+            fps_list.append(None)
+            mol_idx_list.append(None)
+            continue
+        fp_bytes = getattr(row, "morgan_fp_bytes", None)
+        if fp_bytes is None:
+            fps_list.append(None)
+            mol_idx_list.append(molecule_id_to_idx[int(pubchem_id)])
+            continue
+        # Deserialize to RDKit ExplicitBitVect (NOT numpy — BulkTanimotoSimilarity needs BitVect)
+        try:
+            bv = DataStructs.ExplicitBitVect(fp_bytes)
+            fps_list.append(bv)
+        except Exception:
+            try:
+                # Fallback: if stored as numpy bytes
+                arr = np.frombuffer(fp_bytes, dtype=np.uint8)
+                bv = DataStructs.ExplicitBitVect(len(arr) * 8)
+                for bit_idx, byte_val in enumerate(arr):
+                    for bit_pos in range(8):
+                        if byte_val & (1 << bit_pos):
+                            bv.SetBit(bit_idx * 8 + bit_pos)
+                fps_list.append(bv)
+            except Exception:
+                fps_list.append(None)
+        mol_idx_list.append(molecule_id_to_idx[int(pubchem_id)])
+
+    src_indices, dst_indices, sim_values = [], [], []
+    valid_fps = [
+        (i, fp, mol_idx_list[i])
+        for i, fp in enumerate(fps_list)
+        if fp is not None and mol_idx_list[i] is not None
+    ]
+
+    for pos_i, (i, fp_i, midx_i) in enumerate(tqdm(valid_fps, desc="Tanimoto edges")):
+        # Lower triangle: compare against all earlier valid fps
+        earlier_fps = [fp for _, fp, _ in valid_fps[:pos_i]]
+        earlier_midxs = [midx for _, _, midx in valid_fps[:pos_i]]
+        if not earlier_fps:
+            continue
+        sims = DataStructs.BulkTanimotoSimilarity(fp_i, earlier_fps)
+        for j, sim in enumerate(sims):
+            if sim > threshold:
+                src_indices.append(midx_i)
+                dst_indices.append(earlier_midxs[j])
+                sim_values.append(float(sim))
+
+    logger.info("Tanimoto edges: %d pairs above %.2f threshold", len(src_indices), threshold)
+
+    if not src_indices:
+        logger.warning("Structural edges: 0 edges built — all molecules may lack valid fps")
+        return torch.zeros((2, 0), dtype=torch.long), torch.zeros(0, dtype=torch.float32)
+
+    # Make undirected: add reverse edges
+    fwd = torch.tensor([src_indices, dst_indices], dtype=torch.long)
+    rev = torch.tensor([dst_indices, src_indices], dtype=torch.long)
+    struct_edge_index = torch.cat([fwd, rev], dim=1)
+    struct_weights = torch.tensor(sim_values + sim_values, dtype=torch.float32)
+    return struct_edge_index, struct_weights
+
+
+# ---------------------------------------------------------------------------
 # Validation gate
 # ---------------------------------------------------------------------------
 
@@ -491,10 +708,12 @@ def build_graph(force: bool = False) -> None:
     )
     molecule_feat = _build_molecule_features(mol_df, fp_fmt)
 
-    # --- Build edges (Plan 03-03 will add these) ---
-    # TODO: contains edges
-    # TODO: co_occurs edges
-    # TODO: structural edges
+    # --- Build edges ---
+    contains_ei, contains_ea = _build_contains_edges(
+        ing_df, mol_df, ingredient_id_to_idx, molecule_id_to_idx
+    )
+    cooccurs_ei, cooccurs_ea = _build_cooccurs_edges(cooc_df, name_to_ingredient_idx)
+    struct_ei, struct_ea = _build_structural_edges(mol_df, molecule_id_to_idx, fp_fmt)
 
     # --- Assemble HeteroData (Plan 03-04 will complete this) ---
     # TODO: assemble, validate, split, save
