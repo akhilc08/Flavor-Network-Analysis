@@ -4,6 +4,12 @@ data/raw/recipes.csv
 data/raw/ingredients.csv
 data/raw/flavordb_cache.sqlite
 
+# Generated graph artifacts (large binary)
+graph/hetero_data.pt
+
+# macOS metadata
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
