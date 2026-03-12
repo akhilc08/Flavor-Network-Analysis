@@ -73,7 +73,13 @@ Plans:
   3. InfoNCE loss is logged as a separate component (not merged into the combined loss number)
   4. `model/embeddings/ingredient_embeddings.pkl` exists and contains a 128-dim vector for every ingredient in the graph
   5. Validation AUC >= 0.70 is reached (required gate before active learning is enabled)
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Test scaffold (tests/test_model.py stubs + conftest.py HeteroData fixture)
+- [ ] 04-02-PLAN.md — FlavorGAT model class (model/gat_model.py: HeteroConv + GATConv, BN, projections)
+- [ ] 04-03-PLAN.md — Loss functions (model/losses.py: molecular BCE, recipe BCE, InfoNCE, combined)
+- [ ] 04-04-PLAN.md — Training script + embedding export (model/train_gat.py: full loop, checkpoints, CSV log, pkl export)
 
 ### Phase 5: Scoring and Active Learning
 **Goal**: Every ingredient pair has a calibrated surprise score on disk, and the active learning loop can accept user ratings and fine-tune the model without catastrophic forgetting.
@@ -109,6 +115,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 4/4 | Complete   | 2026-03-12 |
 | 2. Feature Engineering | 0/TBD | Not started | - |
 | 3. Graph Construction | 0/TBD | Not started | - |
-| 4. Model Training | 0/TBD | Not started | - |
+| 4. Model Training | 0/4 | Planned | - |
 | 5. Scoring and Active Learning | 0/TBD | Not started | - |
 | 6. Streamlit UI | 0/TBD | Not started | - |
