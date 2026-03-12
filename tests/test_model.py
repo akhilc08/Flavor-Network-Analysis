@@ -61,6 +61,7 @@ def test_bn_dropout_present():
 # MODEL-04: Molecular BCE loss returns scalar tensor
 # ---------------------------------------------------------------------------
 
+@pytest.mark.xfail(reason="model/losses.py not yet implemented", strict=False)
 def test_molecular_loss():
     from model.losses import molecular_bce_loss
     torch.manual_seed(0)
@@ -75,6 +76,7 @@ def test_molecular_loss():
 # MODEL-05: Recipe BCE loss returns scalar tensor
 # ---------------------------------------------------------------------------
 
+@pytest.mark.xfail(reason="model/losses.py not yet implemented", strict=False)
 def test_recipe_loss():
     from model.losses import recipe_bce_loss
     torch.manual_seed(0)
@@ -89,6 +91,7 @@ def test_recipe_loss():
 # MODEL-06: InfoNCE returns scalar, not nan
 # ---------------------------------------------------------------------------
 
+@pytest.mark.xfail(reason="model/losses.py not yet implemented", strict=False)
 def test_infonce_loss():
     from model.losses import info_nce_loss
     torch.manual_seed(0)
@@ -106,6 +109,7 @@ def test_infonce_loss():
 # MODEL-07: combined_loss = alpha*mol + beta*rec + gamma*nce within 1e-5
 # ---------------------------------------------------------------------------
 
+@pytest.mark.xfail(reason="model/losses.py not yet implemented", strict=False)
 def test_combined_loss_formula():
     from model.losses import combined_loss
     mol = torch.tensor(0.3)
