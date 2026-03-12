@@ -671,6 +671,44 @@ def run_validation_gate(data: HeteroData) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Summary table helper
+# ---------------------------------------------------------------------------
+
+
+def _print_graph_summary(train_data, val_data, test_data, ingredient_id_to_idx, molecule_id_to_idx):
+    """Print summary table to console and pipeline.log."""
+    n_ing = len(ingredient_id_to_idx)
+    n_mol = len(molecule_id_to_idx)
+    n_contains = train_data['ingredient', 'contains', 'molecule'].edge_index.shape[1]
+    n_cooccurs = train_data['ingredient', 'co_occurs', 'ingredient'].edge_index.shape[1]
+    n_struct = train_data['molecule', 'structurally_similar', 'molecule'].edge_index.shape[1]
+    n_train_sup = train_data['ingredient', 'co_occurs', 'ingredient'].edge_label_index.shape[1]
+    n_val_sup = val_data['ingredient', 'co_occurs', 'ingredient'].edge_label_index.shape[1]
+    n_test_sup = test_data['ingredient', 'co_occurs', 'ingredient'].edge_label_index.shape[1]
+
+    lines = [
+        "",
+        "=== Phase 3 Graph Construction Summary ===",
+        f"Ingredient nodes:   {n_ing:>8,}",
+        f"Molecule nodes:     {n_mol:>8,}",
+        f"Contains edges:     {n_contains:>8,}",
+        f"Co-occurs edges:    {n_cooccurs:>8,}  (train message-passing)",
+        f"Structural edges:   {n_struct:>8,}",
+        f"Link pred split:",
+        f"  train:            {n_train_sup:>8,}  (pos + neg supervision pairs)",
+        f"  val:              {n_val_sup:>8,}",
+        f"  test:             {n_test_sup:>8,}",
+        f"Output:             graph/hetero_data.pt",
+        f"                    graph/index_maps.json",
+        "==========================================",
+        "",
+    ]
+    output = "\n".join(lines)
+    print(output)
+    logger.info(output)
+
+
+# ---------------------------------------------------------------------------
 # Main build function (skeleton — edges added in Plan 03-03)
 # ---------------------------------------------------------------------------
 
@@ -715,8 +753,96 @@ def build_graph(force: bool = False) -> None:
     cooccurs_ei, cooccurs_ea = _build_cooccurs_edges(cooc_df, name_to_ingredient_idx)
     struct_ei, struct_ea = _build_structural_edges(mol_df, molecule_id_to_idx, fp_fmt)
 
-    # --- Assemble HeteroData (Plan 03-04 will complete this) ---
-    # TODO: assemble, validate, split, save
+    # --- Assemble HeteroData ---
+    data = HeteroData()
+
+    data['ingredient'].x = ingredient_feat
+    data['ingredient'].num_nodes = ingredient_feat.shape[0]
+    data['molecule'].x = molecule_feat
+    data['molecule'].num_nodes = molecule_feat.shape[0]
+
+    data['ingredient', 'contains', 'molecule'].edge_index = contains_ei
+    data['ingredient', 'contains', 'molecule'].edge_attr = contains_ea
+
+    data['ingredient', 'co_occurs', 'ingredient'].edge_index = cooccurs_ei
+    data['ingredient', 'co_occurs', 'ingredient'].edge_attr = cooccurs_ea
+
+    data['molecule', 'structurally_similar', 'molecule'].edge_index = struct_ei
+    data['molecule', 'structurally_similar', 'molecule'].edge_attr = struct_ea
+
+    # --- PyG structural validation ---
+    try:
+        data.validate(raise_on_error=True)
+        logger.info("HeteroData structural validation: passed")
+    except Exception as e:
+        logger.error("HeteroData structural validation failed: %s", e)
+        raise
+
+    # --- Validation gate (GRAPH-07) ---
+    run_validation_gate(data)
+
+    # --- Link prediction split (GRAPH-08) ---
+    # Split co-occurs edges only (70/15/15); message-passing uses training edges.
+    # is_undirected=True: co-occurrence is symmetric; rev_edge_types set to same type.
+    # Non-listed edge types (contains, structurally_similar) are unchanged in all splits.
+    transform = RandomLinkSplit(
+        num_val=0.15,
+        num_test=0.15,
+        is_undirected=True,
+        neg_sampling_ratio=1.0,
+        add_negative_train_samples=True,
+        edge_types=[('ingredient', 'co_occurs', 'ingredient')],
+        rev_edge_types=[('ingredient', 'co_occurs', 'ingredient')],
+    )
+    train_data, val_data, test_data = transform(data)
+    logger.info(
+        "Link prediction split: train=%d, val=%d, test=%d supervision pairs",
+        train_data['ingredient', 'co_occurs', 'ingredient'].edge_label_index.shape[1],
+        val_data['ingredient', 'co_occurs', 'ingredient'].edge_label_index.shape[1],
+        test_data['ingredient', 'co_occurs', 'ingredient'].edge_label_index.shape[1],
+    )
+
+    # --- Zero leakage assertion (GRAPH-08) ---
+    # Must run before torch.save — never write a potentially-leaked graph.
+    train_ei_co = train_data['ingredient', 'co_occurs', 'ingredient'].edge_index
+    test_eli = test_data['ingredient', 'co_occurs', 'ingredient'].edge_label_index
+    test_labels = test_data['ingredient', 'co_occurs', 'ingredient'].edge_label
+    positive_mask = (test_labels == 1)
+    test_pos_ei = test_eli[:, positive_mask]
+
+    train_set = set(zip(train_ei_co[0].tolist(), train_ei_co[1].tolist()))
+    leakage_count = sum(
+        1 for s, d in zip(test_pos_ei[0].tolist(), test_pos_ei[1].tolist())
+        if (s, d) in train_set or (d, s) in train_set
+    )
+    assert leakage_count == 0, (
+        f"DATA LEAKAGE DETECTED: {leakage_count} test edges appear in message-passing "
+        f"edge_index. Graph not saved. Check RandomLinkSplit configuration."
+    )
+    logger.info("Leakage assertion: PASSED (0 test edges in train message-passing graph)")
+
+    # --- Save (GRAPH-09) ---
+    os.makedirs("graph", exist_ok=True)
+    payload = {
+        "graph": train_data,
+        "val_data": val_data,
+        "test_data": test_data,
+        "ingredient_id_to_idx": ingredient_id_to_idx,
+        "molecule_id_to_idx": molecule_id_to_idx,
+    }
+    torch.save(payload, OUTPUT_PT)
+    logger.info("Saved: %s", OUTPUT_PT)
+
+    json_maps = {
+        "ingredient_id_to_idx": {str(k): v for k, v in ingredient_id_to_idx.items()},
+        "molecule_id_to_idx": {str(k): v for k, v in molecule_id_to_idx.items()},
+    }
+    with open(OUTPUT_JSON, "w") as f:
+        json.dump(json_maps, f, indent=2)
+    logger.info("Saved: %s", OUTPUT_JSON)
+
+    # --- Summary table ---
+    _print_graph_summary(train_data, val_data, test_data, ingredient_id_to_idx, molecule_id_to_idx)
 
     logger.info("=== Graph Construction complete (%.1f s) ===", time.time() - t0)
 
