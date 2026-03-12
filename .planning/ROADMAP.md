@@ -91,7 +91,12 @@ Plans:
   3. Submitting a rating appends a row to `feedback.csv` and triggers a 10-epoch fine-tune with experience replay
   4. A checkpoint is saved before each fine-tune round and can be used to restore the pre-fine-tune state
   5. After fine-tuning, validation AUC before and after are both available as values (not just printed to console)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Wave 0: test stubs (tests/test_scoring.py, tests/test_active_learning.py) and API stubs (scoring/score.py, model/active_learning.py)
+- [ ] 05-02-PLAN.md — Scoring module: vectorized compute_all_pairs, all public API functions, standalone compute_scores.py
+- [ ] 05-03-PLAN.md — Active learning module: submit_rating, is_active_learning_enabled, fine_tune_with_replay with experience replay
 
 ### Phase 6: Streamlit UI
 **Goal**: A polished 4-page Streamlit demo runs end-to-end: users can search ingredients, rate uncertain pairs to improve the model, explore the flavor graph, and generate AI-backed recipes — with no raw stack traces visible.
@@ -116,5 +121,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Feature Engineering | 0/TBD | Not started | - |
 | 3. Graph Construction | 0/TBD | Not started | - |
 | 4. Model Training | 0/4 | Planned | - |
-| 5. Scoring and Active Learning | 0/TBD | Not started | - |
+| 5. Scoring and Active Learning | 0/3 | Planned | - |
 | 6. Streamlit UI | 0/TBD | Not started | - |
