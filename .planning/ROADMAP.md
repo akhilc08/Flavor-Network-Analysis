@@ -49,7 +49,13 @@ Plans:
   3. RDKit sanitization failures are logged by ingredient and molecule name — running the script twice produces identical logs (deterministic)
   4. Tanimoto similarity edges for molecule pairs with similarity > 0.7 are computed and saved
   5. Each ingredient's feature vector includes texture, temperature affinity, cultural context, and flavor profile components
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Test scaffold (tests/test_features.py: all 13 FEAT-01..09 test stubs, xfail)
+- [ ] 02-02-PLAN.md — fetch_smiles.py (FlavorDB2 extraction + PubChem gap-fill → pubchem_cache.json)
+- [ ] 02-03-PLAN.md — build_features.py RDKit layer (descriptors, Morgan FPs, Tanimoto edges → molecules.parquet, tanimoto_edges.parquet)
+- [ ] 02-04-PLAN.md — build_features.py multimodal layer (texture, temperature, cultural context, flavor profile → ingredients.parquet, cooccurrence.parquet)
 
 ### Phase 3: Graph Construction
 **Goal**: A validated heterogeneous graph exists on disk with all three edge types, explicit index mappings, and a leakage-free link prediction split.
@@ -124,7 +130,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete   | 2026-03-12 |
-| 2. Feature Engineering | 0/TBD | Not started | - |
+| 2. Feature Engineering | 0/4 | Planned | - |
 | 3. Graph Construction | 0/TBD | Not started | - |
 | 4. Model Training | 0/4 | Planned | - |
 | 5. Scoring and Active Learning | 0/3 | Planned | - |
