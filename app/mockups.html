@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flavor Network — UI Mockups</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #111; color: #eee; padding: 32px 24px; }
+  h1 { text-align: center; font-size: 1.5rem; font-weight: 400; letter-spacing: 0.05em; color: #aaa; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #666; font-size: 0.85rem; margin-bottom: 48px; }
+  .themes { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; }
+  .theme-block { flex: 0 0 380px; }
+  .theme-label { text-align: center; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 12px; }
+
+  /* ─── EARTHY ─── */
+  .earthy { --bg: #fdf6ec; --surface: #fff8f0; --sidebar: #f0e6d3; --accent: #c4622a; --text: #2d1b0e; --subtext: #7a5c42; --border: #e8d5bc; --pill-s: #4a7c4e; --pill-u: #b8860b; --pill-c: #888; --radar: #c4622a; --bar: #c4622a; }
+  /* ─── DARK ─── */
+  .dark { --bg: #0f1117; --surface: #1a1d2e; --sidebar: #141622; --accent: #00c9b8; --text: #e8eaf0; --subtext: #8b94b0; --border: #2a2e45; --pill-s: #00c9b8; --pill-u: #f0b429; --pill-c: #555; --radar: #00c9b8; --bar: #00c9b8; }
+  /* ─── MINIMAL ─── */
+  .minimal { --bg: #f9fafb; --surface: #ffffff; --sidebar: #f1f3f5; --accent: #5c6bc0; --text: #1a1a2e; --subtext: #6b7280; --border: #e5e7eb; --pill-s: #2e7d32; --pill-u: #e65100; --pill-c: #9e9e9e; --radar: #5c6bc0; --bar: #5c6bc0; }
+
+  .app-frame {
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    height: 620px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* top bar */
+  .topbar {
+    background: var(--sidebar);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .d-red { background: #ff5f57; } .d-yellow { background: #febc2e; } .d-green { background: #28c840; }
+  .topbar-title { margin-left: 12px; font-size: 0.78rem; color: var(--subtext); font-weight: 500; letter-spacing: 0.03em; }
+
+  /* body */
+  .app-body { display: flex; flex: 1; overflow: hidden; }
+
+  /* sidebar */
+  .sidebar {
+    width: 160px;
+    flex-shrink: 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-brand {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    padding-left: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: var(--subtext);
+    cursor: pointer;
+  }
+  .nav-item.active {
+    background: var(--accent);
+    color: var(--surface);
+    font-weight: 600;
+    opacity: 1;
+  }
+  .nav-item:not(.active):hover { background: var(--border); }
+  .nav-icon { font-size: 0.9rem; }
+
+  /* main content */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 18px;
+    background: var(--bg);
+  }
+  .page-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+  .page-sub { font-size: 0.75rem; color: var(--subtext); margin-bottom: 16px; }
+
+  /* search box */
+  .search-box {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 0.82rem;
+    color: var(--subtext);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .search-box span { opacity: 0.5; }
+
+  /* result cards */
+  .results-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--subtext); margin-bottom: 8px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .card-name { font-size: 0.88rem; font-weight: 600; color: var(--text); font-family: Georgia, serif; }
+  .pill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 99px;
+    color: #fff;
+  }
+  .pill-s { background: var(--pill-s); }
+  .pill-u { background: var(--pill-u); }
+  .pill-c { background: var(--pill-c); }
+
+  .score-bar-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .score-num { font-size: 0.72rem; font-weight: 700; color: var(--accent); width: 32px; }
+  .score-track { flex: 1; height: 4px; background: var(--border); border-radius: 99px; }
+  .score-fill { height: 4px; background: var(--bar); border-radius: 99px; }
+
+  .molecules { font-size: 0.68rem; color: var(--subtext); }
+  .mol-tag {
+    display: inline-block;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin: 1px 2px;
+    font-size: 0.65rem;
+  }
+
+  /* radar mini */
+  .card-bottom { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
+  .radar-placeholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .radar-svg { position: absolute; }
+  .why-box { font-size: 0.65rem; color: var(--subtext); line-height: 1.5; }
+  .why-box strong { color: var(--text); font-size: 0.7rem; display: block; margin-bottom: 2px; }
+
+  /* collapsed card */
+  .card-collapsed {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0.7;
+  }
+  .card-collapsed .card-name { font-size: 0.8rem; }
+  .chevron { font-size: 0.7rem; color: var(--subtext); }
+
+  /* scrollbar hide */
+  .main::-webkit-scrollbar { width: 4px; }
+  .main::-webkit-scrollbar-track { background: transparent; }
+  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Flavor Network — UI Theme Options</h1>
+<p class="subtitle">Page 1: Ingredient Search &nbsp;·&nbsp; Pick a theme to guide the build</p>
+
+<div class="themes">
+
+  <!-- ══════════ EARTHY ══════════ -->
+  <div class="theme-block">
+    <div class="theme-label">A · Earthy / Food-forward</div>
+    <div class="app-frame earthy">
+      <div class="topbar">
+        <div class="dot d-red"></div><div class="dot d-yellow"></div><div class="dot d-green"></div>
+        <div class="topbar-title">localhost:8501 · Flavor Network</div>
+      </div>
+      <div class="app-body">
+        <div class="sidebar">
+          <div class="sidebar-brand">🌿 Flavor<br>Network</div>
+          <div class="nav-item active"><span class="nav-icon">🔍</span> Search</div>
+          <div class="nav-item"><span class="nav-icon">⭐</span> Rate</div>
+          <div class="nav-item"><span class="nav-icon">🕸</span> Graph</div>
+          <div class="nav-item"><span class="nav-icon">🍽</span> Recipe</div>
+        </div>
+        <div class="main">
+          <div class="page-title">Ingredient Search</div>
+          <div class="page-sub">Discover surprising molecular pairings</div>
+          <div class="search-box">🔍 <span>Search an ingredient... e.g. "strawberry"</span></div>
+          <div class="results-label">Top pairings for <strong style="color:var(--accent)">Strawberry</strong></div>
+          <!-- card 1 expanded -->
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">Blue Cheese</div>
+              <span class="pill pill-s">Surprising</span>
+            </div>
+            <div class="score-bar-wrap">
+              <div class="score-num">0.84</div>
+              <div class="score-track"><div class="score-fill" style="width:84%"></div></div>
+            </div>
+            <div class="molecules">Shared: <span class="mol-tag">vanillin</span><span class="mol-tag">linalool</span><span class="mol-tag">eugenol</span></div>
+            <div class="card-bottom">
+              <div class="radar-placeholder">
+                <svg class="radar-svg" width="64" height="64" viewBox="0 0 64 64">
+                  <polygon points="32,8 52,22 48,46 16,46 12,22" fill="none" stroke="#e8d5bc" stroke-width="1"/>
+                  <polygon points="32,16 44,25 41,40 23,40 20,25" fill="none" stroke="#e8d5bc" stroke-width="0.5"/>
+                  <polygon points="32,13 50,28 43,46 21,46 14,28" fill="rgba(196,98,42,0.25)" stroke="#c4622a" stroke-width="1.5"/>
+                  <polygon points="32,10 46,24 44,42 20,42 18,24" fill="rgba(74,124,78,0.15)" stroke="#4a7c4e" stroke-width="1" stroke-dasharray="3,2"/>
+                </svg>
+              </div>
+              <div class="why-box">
+                <strong>Why it works</strong>
+                Both contain <em>vanillin</em> (sweet, vanilla) and <em>linalool</em> (floral). The fat in blue cheese amplifies strawberry's esters.
+              </div>
+            </div>
+          </div>
+          <!-- collapsed cards -->
+          <div class="card-collapsed"><div class="card-name">Balsamic Vinegar</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-s">Surprising</span><span class="chevron">›</span></div></div>
+          <div class="card-collapsed"><div class="card-name">Dark Chocolate</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-u">Unexpected</span><span class="chevron">›</span></div></div>
+          <div class="card-collapsed"><div class="card-name">Black Pepper</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-u">Unexpected</span><span class="chevron">›</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ DARK ══════════ -->
+  <div class="theme-block">
+    <div class="theme-label">B · Dark / Molecular</div>
+    <div class="app-frame dark">
+      <div class="topbar">
+        <div class="dot d-red"></div><div class="dot d-yellow"></div><div class="dot d-green"></div>
+        <div class="topbar-title">localhost:8501 · Flavor Network</div>
+      </div>
+      <div class="app-body">
+        <div class="sidebar">
+          <div class="sidebar-brand" style="color:#00c9b8">◈ Flavor<br>Network</div>
+          <div class="nav-item active"><span class="nav-icon">🔍</span> Search</div>
+          <div class="nav-item"><span class="nav-icon">⭐</span> Rate</div>
+          <div class="nav-item"><span class="nav-icon">🕸</span> Graph</div>
+          <div class="nav-item"><span class="nav-icon">🍽</span> Recipe</div>
+        </div>
+        <div class="main">
+          <div class="page-title" style="color:#e8eaf0">Ingredient Search</div>
+          <div class="page-sub">Discover surprising molecular pairings</div>
+          <div class="search-box">🔍 <span>Search an ingredient... e.g. "strawberry"</span></div>
+          <div class="results-label">Top pairings for <strong style="color:#00c9b8">Strawberry</strong></div>
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">Blue Cheese</div>
+              <span class="pill pill-s">Surprising</span>
+            </div>
+            <div class="score-bar-wrap">
+              <div class="score-num">0.84</div>
+              <div class="score-track"><div class="score-fill" style="width:84%"></div></div>
+            </div>
+            <div class="molecules">Shared: <span class="mol-tag">vanillin</span><span class="mol-tag">linalool</span><span class="mol-tag">eugenol</span></div>
+            <div class="card-bottom">
+              <div class="radar-placeholder">
+                <svg class="radar-svg" width="64" height="64" viewBox="0 0 64 64">
+                  <polygon points="32,8 52,22 48,46 16,46 12,22" fill="none" stroke="#2a2e45" stroke-width="1"/>
+                  <polygon points="32,16 44,25 41,40 23,40 20,25" fill="none" stroke="#2a2e45" stroke-width="0.5"/>
+                  <polygon points="32,13 50,28 43,46 21,46 14,28" fill="rgba(0,201,184,0.2)" stroke="#00c9b8" stroke-width="1.5"/>
+                  <polygon points="32,10 46,24 44,42 20,42 18,24" fill="rgba(240,180,41,0.1)" stroke="#f0b429" stroke-width="1" stroke-dasharray="3,2"/>
+                </svg>
+              </div>
+              <div class="why-box">
+                <strong style="color:#e8eaf0">Why it works</strong>
+                Both contain <em>vanillin</em> (sweet, vanilla) and <em>linalool</em> (floral). The fat in blue cheese amplifies strawberry's esters.
+              </div>
+            </div>
+          </div>
+          <div class="card-collapsed"><div class="card-name">Balsamic Vinegar</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-s">Surprising</span><span class="chevron">›</span></div></div>
+          <div class="card-collapsed"><div class="card-name">Dark Chocolate</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-u">Unexpected</span><span class="chevron">›</span></div></div>
+          <div class="card-collapsed"><div class="card-name">Black Pepper</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-u">Unexpected</span><span class="chevron">›</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ MINIMAL ══════════ -->
+  <div class="theme-block">
+    <div class="theme-label">C · Clean / Minimal</div>
+    <div class="app-frame minimal">
+      <div class="topbar">
+        <div class="dot d-red"></div><div class="dot d-yellow"></div><div class="dot d-green"></div>
+        <div class="topbar-title">localhost:8501 · Flavor Network</div>
+      </div>
+      <div class="app-body">
+        <div class="sidebar">
+          <div class="sidebar-brand" style="color:#5c6bc0">⬡ Flavor<br>Network</div>
+          <div class="nav-item active"><span class="nav-icon">🔍</span> Search</div>
+          <div class="nav-item"><span class="nav-icon">⭐</span> Rate</div>
+          <div class="nav-item"><span class="nav-icon">🕸</span> Graph</div>
+          <div class="nav-item"><span class="nav-icon">🍽</span> Recipe</div>
+        </div>
+        <div class="main">
+          <div class="page-title">Ingredient Search</div>
+          <div class="page-sub">Discover surprising molecular pairings</div>
+          <div class="search-box">🔍 <span>Search an ingredient... e.g. "strawberry"</span></div>
+          <div class="results-label">Top pairings for <strong style="color:#5c6bc0">Strawberry</strong></div>
+          <div class="card">
+            <div class="card-top">
+              <div class="card-name">Blue Cheese</div>
+              <span class="pill pill-s">Surprising</span>
+            </div>
+            <div class="score-bar-wrap">
+              <div class="score-num">0.84</div>
+              <div class="score-track"><div class="score-fill" style="width:84%"></div></div>
+            </div>
+            <div class="molecules">Shared: <span class="mol-tag">vanillin</span><span class="mol-tag">linalool</span><span class="mol-tag">eugenol</span></div>
+            <div class="card-bottom">
+              <div class="radar-placeholder">
+                <svg class="radar-svg" width="64" height="64" viewBox="0 0 64 64">
+                  <polygon points="32,8 52,22 48,46 16,46 12,22" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+                  <polygon points="32,16 44,25 41,40 23,40 20,25" fill="none" stroke="#e5e7eb" stroke-width="0.5"/>
+                  <polygon points="32,13 50,28 43,46 21,46 14,28" fill="rgba(92,107,192,0.2)" stroke="#5c6bc0" stroke-width="1.5"/>
+                  <polygon points="32,10 46,24 44,42 20,42 18,24" fill="rgba(46,125,50,0.1)" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+                </svg>
+              </div>
+              <div class="why-box">
+                <strong>Why it works</strong>
+                Both contain <em>vanillin</em> (sweet, vanilla) and <em>linalool</em> (floral). The fat in blue cheese amplifies strawberry's esters.
+              </div>
+            </div>
+          </div>
+          <div class="card-collapsed"><div class="card-name">Balsamic Vinegar</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-s">Surprising</span><span class="chevron">›</span></div></div>
+          <div class="card-collapsed"><div class="card-name">Dark Chocolate</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-u">Unexpected</span><span class="chevron">›</span></div></div>
+          <div class="card-collapsed"><div class="card-name">Black Pepper</div><div style="display:flex;gap:8px;align-items:center"><span class="pill pill-u">Unexpected</span><span class="chevron">›</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="text-align:center; margin-top:40px; font-size:0.75rem; color:#555;">
+  All other decisions locked: sidebar nav · expandable result cards · radar chart per pairing · pill badges (green=Surprising, amber=Unexpected, gray=Classic)<br>
+  Page 2: blocking spinner fine-tune · Page 3: PyVis click-to-pivot · Page 4: multiselect from top pairs + streaming recipe
+</p>
+
+</body>
+</html>
