@@ -44,9 +44,14 @@ if not logger.handlers:
 # ---------------------------------------------------------------------------
 
 CACHE_PATH = Path("data/raw/pubchem_cache.json")
+INGREDIENTS_CSV = Path("data/raw/ingredients.csv")
 MOLECULES_CSV = Path("data/raw/molecules.csv")
+ALLRECIPES_CSV = Path("data/raw/recipes_allrecipes.csv")
+RECIPES_CSV = Path("data/raw/recipes.csv")
 MOLECULES_PARQUET = Path("data/processed/molecules.parquet")
 TANIMOTO_PARQUET = Path("data/processed/tanimoto_edges.parquet")
+INGREDIENTS_PARQUET = Path("data/processed/ingredients.parquet")
+COOCCURRENCE_PARQUET = Path("data/processed/cooccurrence.parquet")
 
 # Morgan fingerprint generator — created once at module load (radius=2, 1024 bits)
 _MORGAN_GEN = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=1024)
@@ -172,13 +177,30 @@ TEXTURE_LOOKUP = {
 _TEXTURE_DEFAULT = 1  # soft
 
 
-def encode_texture(category: str) -> list:
+def encode_texture(category: str, moisture_content=None) -> list:
     """Return 5-dim one-hot texture vector for an ingredient category.
 
     Dims: [crispy, soft, creamy, chewy, crunchy].
     Falls back to 'soft' for unknown categories.
+
+    Args:
+        category: FlavorDB2 ingredient category string.
+        moisture_content: optional float. If < 10.0 (very dry), overrides to
+            'crispy'. If > 80.0 (very moist), overrides to 'soft'.
     """
     idx = TEXTURE_LOOKUP.get((category or "").lower().strip(), _TEXTURE_DEFAULT)
+
+    # Moisture content overrides
+    if moisture_content is not None:
+        try:
+            mc = float(moisture_content)
+            if mc < 10.0:
+                idx = 0  # crispy
+            elif mc > 80.0:
+                idx = 1  # soft
+        except (ValueError, TypeError):
+            pass  # ignore unparseable moisture values
+
     vec = [0] * 5
     vec[idx] = 1
     return vec
@@ -304,17 +326,23 @@ def _classify_recipe_category(recipe_name: str) -> str | None:
     return None
 
 
-def build_cultural_context_vectors(recipes_df: pd.DataFrame) -> dict:
+def build_cultural_context_vectors(recipes_source) -> dict:
     """Build 10-dim cultural context count vectors per ingredient.
 
     Args:
-        recipes_df: DataFrame with columns 'recipe_name' and 'ingredients'.
-                    'ingredients' may be a comma-separated string or list.
+        recipes_source: either a Path to recipes_allrecipes.csv or a DataFrame
+                        with columns 'recipe_name' and 'ingredients'.
+                        'ingredients' may be a comma-separated string or list.
 
     Returns:
         dict mapping ingredient_name -> list[int] of length 10.
         Counts how many recipes in each cuisine category feature the ingredient.
     """
+    if isinstance(recipes_source, (str, Path)):
+        recipes_df = pd.read_csv(recipes_source)
+        logger.info("Loaded %d AllRecipes recipes from %s", len(recipes_df), recipes_source)
+    else:
+        recipes_df = recipes_source
     ingredient_vectors: dict[str, list[int]] = {}
     unmatched = 0
     total = 0
@@ -503,13 +531,177 @@ def build_molecule_df(force: bool = False) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Integration: build all ingredient features and write parquets
+# ---------------------------------------------------------------------------
+
+# Texture/temperature column name lists for expansion
+_TEXTURE_COLS = ["texture_crispy", "texture_soft", "texture_creamy", "texture_chewy", "texture_crunchy"]
+_TEMPERATURE_COLS = ["temperature_raw", "temperature_cold", "temperature_warm", "temperature_hot"]
+_CULTURAL_COLS = [f"cultural_context_{c.replace(' ', '')}" for c in ALLRECIPES_CATEGORIES]
+
+
+def build_features(force: bool = False) -> None:
+    """Build all multimodal ingredient features and write parquets.
+
+    Outputs:
+        data/processed/ingredients.parquet  — one row per ingredient
+        data/processed/cooccurrence.parquet — ingredient pair counts from recipes.csv
+
+    Molecules and Tanimoto parquets are written by build_molecule_df() which
+    is called as a sub-step if those files are missing.
+
+    Args:
+        force: if True, recompute even if all output files already exist.
+    """
+    all_parquets = [INGREDIENTS_PARQUET, COOCCURRENCE_PARQUET, MOLECULES_PARQUET, TANIMOTO_PARQUET]
+    if all(p.exists() for p in all_parquets) and not force:
+        logger.info("[SKIP] build_features — all parquets present")
+        return
+
+    # Ensure processed directory exists
+    INGREDIENTS_PARQUET.parent.mkdir(parents=True, exist_ok=True)
+
+    # Step 1: Ensure molecules.parquet and tanimoto_edges.parquet exist
+    if not MOLECULES_PARQUET.exists() or not TANIMOTO_PARQUET.exists() or force:
+        build_molecule_df(force=force)
+
+    # Step 2: Build flavor vocabulary from molecules.csv
+    mol_df = pd.read_csv(MOLECULES_CSV)
+    vocab_index = build_flavor_vocab(mol_df)
+    vocab_size = len(vocab_index)
+    logger.info("Flavor vocabulary: %d unique tags", vocab_size)
+
+    # Build pubchem_id -> flavor_profile lookup for efficient molecule joining
+    # molecules.csv may have multiple rows with the same pubchem_id after FooDB enrichment
+    pid_to_flavor: dict[int, str] = {}
+    for _, mrow in mol_df.iterrows():
+        pid = int(mrow["pubchem_id"])
+        fp_str = str(mrow.get("flavor_profile", "")) if pd.notna(mrow.get("flavor_profile")) else ""
+        if pid not in pid_to_flavor:
+            pid_to_flavor[pid] = fp_str
+        elif fp_str:
+            # Union: merge flavor profiles for the same pubchem_id
+            existing = set(pid_to_flavor[pid].split("@")) - {""}
+            new_tags = set(fp_str.split("@")) - {""}
+            pid_to_flavor[pid] = "@".join(sorted(existing | new_tags))
+
+    # Step 3: Build cultural context vectors from AllRecipes
+    if ALLRECIPES_CSV.exists():
+        cultural_vecs = build_cultural_context_vectors(ALLRECIPES_CSV)
+    else:
+        logger.warning("AllRecipes CSV not found at %s — cultural context will be all zeros", ALLRECIPES_CSV)
+        cultural_vecs = {}
+
+    # Step 4: Load ingredients.csv and build feature rows
+    if not INGREDIENTS_CSV.exists():
+        raise FileNotFoundError(
+            f"ingredients.csv not found at {INGREDIENTS_CSV}. "
+            "Run: conda run -n flavor-network python data/scrape_flavordb.py"
+        )
+
+    ing_df = pd.read_csv(INGREDIENTS_CSV)
+    logger.info("Loaded %d ingredients from %s", len(ing_df), INGREDIENTS_CSV)
+
+    rows = []
+    for _, ing_row in tqdm(ing_df.iterrows(), total=len(ing_df), desc="Building ingredient features"):
+        ingredient_id = int(ing_row["ingredient_id"])
+        name = str(ing_row["name"])
+        category = str(ing_row.get("category", "")).strip()
+
+        # Moisture content from FooDB enrichment (may be in molecules.csv not ingredients.csv)
+        moisture = ing_row.get("moisture_content", None)
+        if pd.isna(moisture) if moisture is not None else True:
+            moisture = None
+
+        # Texture and temperature encoding
+        texture_vec = encode_texture(category, moisture)
+        temperature_vec = encode_temperature(category)
+
+        # Cultural context: binarize count vector to 0/1
+        raw_cultural = cultural_vecs.get(name.lower(), [0] * 10)
+        cultural_vec = [min(1, v) for v in raw_cultural]
+
+        # Flavor profile: union tags across all molecules for this ingredient
+        molecules_json_str = ing_row.get("molecules_json", "[]")
+        try:
+            molecule_list = json.loads(molecules_json_str) if molecules_json_str else []
+        except (json.JSONDecodeError, TypeError):
+            molecule_list = []
+
+        # Build unified flavor profile string from all molecules
+        all_tags: set[str] = set()
+        for mol_entry in molecule_list:
+            pid = mol_entry.get("pubchem_id") if isinstance(mol_entry, dict) else None
+            if pid is not None:
+                fp_str = pid_to_flavor.get(int(pid), "")
+                for tag in fp_str.split("@"):
+                    tag = tag.strip()
+                    if tag:
+                        all_tags.add(tag)
+            # Also check inline flavor_profile in the molecule entry
+            if isinstance(mol_entry, dict):
+                fp_inline = str(mol_entry.get("flavor_profile", ""))
+                for tag in fp_inline.split("@"):
+                    tag = tag.strip()
+                    if tag:
+                        all_tags.add(tag)
+
+        combined_fp_str = "@".join(sorted(all_tags))
+        flavor_vec = encode_flavor_profile(combined_fp_str, vocab_index)
+
+        # Build row dict
+        row = {"ingredient_id": ingredient_id, "name": name, "category": category}
+        for col, val in zip(_TEXTURE_COLS, texture_vec):
+            row[col] = val
+        for col, val in zip(_TEMPERATURE_COLS, temperature_vec):
+            row[col] = val
+        for col, val in zip(_CULTURAL_COLS, cultural_vec):
+            row[col] = val
+        for i, val in enumerate(flavor_vec):
+            row[f"flavor_profile_{i}"] = val
+
+        rows.append(row)
+
+    ingredients_out_df = pd.DataFrame(rows)
+    ingredients_out_df.to_parquet(INGREDIENTS_PARQUET, index=False, engine="pyarrow")
+    logger.info("Wrote %s (%d rows, %d columns)", INGREDIENTS_PARQUET, len(ingredients_out_df), len(ingredients_out_df.columns))
+
+    # Step 5: Carry cooccurrence from recipes.csv
+    if RECIPES_CSV.exists():
+        logger.info("Loading recipes.csv for cooccurrence (may be large)...")
+        chunks = []
+        for chunk in pd.read_csv(RECIPES_CSV, chunksize=100_000):
+            chunks.append(chunk)
+        cooccurrence_df = pd.concat(chunks, ignore_index=True)
+        cooccurrence_df.to_parquet(COOCCURRENCE_PARQUET, index=False, engine="pyarrow")
+        logger.info("Wrote %s (%d rows)", COOCCURRENCE_PARQUET, len(cooccurrence_df))
+    else:
+        logger.warning(
+            "recipes.csv not found at %s — cooccurrence.parquet NOT written. "
+            "Run: conda run -n flavor-network python run_pipeline.py --skip-scrape --skip-foodb --skip-smiles",
+            RECIPES_CSV,
+        )
+
+    # Log summary
+    cultural_matched = sum(1 for v in cultural_vecs.values() if any(x > 0 for x in v))
+    logger.info(
+        "build_features summary: ingredients=%d, flavor_vocab_size=%d, "
+        "cultural_context_matched=%d, cooccurrence_written=%s",
+        len(rows),
+        vocab_size,
+        cultural_matched,
+        COOCCURRENCE_PARQUET.exists(),
+    )
+
+
+# ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Build molecular features: RDKit descriptors, Morgan fingerprints, Tanimoto edges."
+        description="Build molecular features: RDKit descriptors, Morgan fingerprints, Tanimoto edges, ingredient features."
     )
     parser.add_argument(
         "--force",
@@ -517,7 +709,7 @@ def main():
         help="Recompute even if output parquets already exist.",
     )
     args = parser.parse_args()
-    build_molecule_df(force=args.force)
+    build_features(force=args.force)
 
 
 if __name__ == "__main__":
