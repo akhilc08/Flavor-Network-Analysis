@@ -23,15 +23,15 @@
 
 ### Feature Engineering
 
-- [ ] **FEAT-01**: PubChem API fetches canonical SMILES per pubchem_id with async httpx, token-bucket rate limiting (≤400 req/min), and full local cache (pubchem_cache.json); missing SMILES logged and reported
-- [ ] **FEAT-02**: RDKit computes molecular descriptors from SMILES: MW, logP, HBD, HBA, rotatable bonds, TPSA; sanitization failures logged with ingredient/molecule name
-- [ ] **FEAT-03**: RDKit computes Morgan fingerprints (radius=2, 1024 bits) per molecule
-- [ ] **FEAT-04**: Tanimoto similarity computed between all molecule pairs; pairs with similarity > 0.7 recorded as structural similarity edges
-- [ ] **FEAT-05**: Texture embedding computed per ingredient (crispy/soft/creamy/chewy/crunchy) via lookup from category + moisture content
-- [ ] **FEAT-06**: Temperature affinity computed per ingredient (raw/cold/warm/hot) via hand-coded lookup table
-- [ ] **FEAT-07**: Cultural context vector computed per ingredient: one-hot over 10 cuisine categories derived from recipe co-occurrence data
-- [ ] **FEAT-08**: Flavor profile multi-hot vector encoded per ingredient from flavor_profile tags (sweet/sour/umami/bitter/floral/smoky etc.)
-- [ ] **FEAT-09**: Processed features written to data/processed/ as parquet files before graph construction
+- [x] **FEAT-01**: PubChem API fetches canonical SMILES per pubchem_id with async httpx, token-bucket rate limiting (≤400 req/min), and full local cache (pubchem_cache.json); missing SMILES logged and reported
+- [x] **FEAT-02**: RDKit computes molecular descriptors from SMILES: MW, logP, HBD, HBA, rotatable bonds, TPSA; sanitization failures logged with ingredient/molecule name
+- [x] **FEAT-03**: RDKit computes Morgan fingerprints (radius=2, 1024 bits) per molecule
+- [x] **FEAT-04**: Tanimoto similarity computed between all molecule pairs; pairs with similarity > 0.7 recorded as structural similarity edges
+- [x] **FEAT-05**: Texture embedding computed per ingredient (crispy/soft/creamy/chewy/crunchy) via lookup from category + moisture content
+- [x] **FEAT-06**: Temperature affinity computed per ingredient (raw/cold/warm/hot) via hand-coded lookup table
+- [x] **FEAT-07**: Cultural context vector computed per ingredient: one-hot over 10 cuisine categories derived from recipe co-occurrence data
+- [x] **FEAT-08**: Flavor profile multi-hot vector encoded per ingredient from flavor_profile tags (sweet/sour/umami/bitter/floral/smoky etc.)
+- [x] **FEAT-09**: Processed features written to data/processed/ as parquet files before graph construction
 
 ### Graph Construction
 
