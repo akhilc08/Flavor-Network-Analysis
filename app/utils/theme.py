@@ -3,125 +3,81 @@ import streamlit as st
 THEME_CSS = """
 <style>
   /* ── HIDE STREAMLIT CHROME ── */
-  [data-testid="stAppHeader"]          { background: transparent !important; border-bottom: none !important; }
-  [data-testid="stAppToolbar"]         { display: none !important; }
-  [data-testid="stAppDeployButton"]    { display: none !important; }
-  [data-testid="stMainMenu"]           { display: none !important; }
-  [data-testid="stMainMenuButton"]     { display: none !important; }
-  #MainMenu                            { display: none !important; }
-  footer                               { display: none !important; }
+  [data-testid="stAppHeader"]               { display: none !important; }
+  [data-testid="stAppToolbar"]              { display: none !important; }
+  [data-testid="stAppDeployButton"]         { display: none !important; }
+  [data-testid="stMainMenu"]                { display: none !important; }
+  [data-testid="stMainMenuButton"]          { display: none !important; }
+  #MainMenu                                 { display: none !important; }
+  footer                                    { display: none !important; }
+  [data-testid="stSidebar"]                 { display: none !important; }
   [data-testid="stSidebarCollapsedControl"] { display: none !important; }
   [data-testid="stExpandSidebarButton"]     { display: none !important; }
 
-  /* ── TRANSFORM SIDEBAR INTO HORIZONTAL TOP NAV ── */
-  [data-testid="stSidebar"] {
-    position: fixed !important;
+  /* ── BACKGROUNDS ── */
+  .stApp,
+  [data-testid="stAppViewContainer"] { background-color: #fdf6ec !important; }
+
+  /* ── MAIN CONTENT ── */
+  [data-testid="stMain"]               { padding-top: 0 !important; }
+  [data-testid="stMainBlockContainer"] {
+    padding-top: 0 !important;
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+    padding-bottom: 48px !important;
+    max-width: 1280px !important;
+  }
+
+  /* ── TOP NAV CONTAINER ── */
+  /* Target the first stHorizontalBlock inside the first stColumn set = our nav row */
+  div[data-testid="stNavContainer"] {
+    position: sticky !important;
     top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    min-width: 100% !important;
-    height: 44px !important;
+    z-index: 9999 !important;
     background: #fdf6ec !important;
-    border-right: none !important;
     border-bottom: 1px solid #e8d5bc !important;
-    z-index: 99999 !important;
-    overflow: hidden !important;
-    transform: none !important;
+    margin-left: -48px !important;
+    margin-right: -48px !important;
+    padding: 0 48px !important;
   }
-  [data-testid="stSidebarHeader"]      { display: none !important; }
-  [data-testid="stSidebarContent"] {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    height: 44px !important;
+
+  /* ── PAGE LINKS — style st.page_link as nav items ── */
+  [data-testid="stPageLink-NavLink"] {
     background: transparent !important;
+    border: none !important;
     padding: 0 !important;
-    width: 100% !important;
-    overflow: hidden !important;
-  }
-  /* Logo area (stSidebarUserContent holds our st.sidebar.markdown) */
-  [data-testid="stSidebarUserContent"] {
-    display: flex !important;
-    align-items: center !important;
-    padding: 0 24px 0 48px !important;
-    flex-shrink: 0 !important;
-    height: 44px !important;
-    overflow: visible !important;
-    min-width: 0 !important;
-  }
-  [data-testid="stSidebarUserContent"] p {
-    margin: 0 !important;
-    font-family: Georgia, serif !important;
-    font-size: 16px !important;
-    font-weight: 400 !important;
-    color: #2d1b0e !important;
-    letter-spacing: -0.02em !important;
-    white-space: nowrap !important;
-  }
-  /* Nav items (stSidebarNav) pushed to the right */
-  [data-testid="stSidebarNav"] {
-    margin-left: auto !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
-    height: 44px !important;
-    padding: 0 24px 0 0 !important;
-    overflow: hidden !important;
-  }
-  [data-testid="stSidebarNavItems"] {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    height: 44px !important;
-  }
-  [data-testid="stSidebarNavLink"] {
-    padding: 0 16px !important;
     height: 44px !important;
     display: flex !important;
     align-items: center !important;
-    border-left: none !important;
-    border-bottom: 2px solid transparent !important;
-    border-radius: 0 !important;
+  }
+  [data-testid="stPageLink-NavLink"] p {
     font-family: system-ui, sans-serif !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     letter-spacing: 0.1em !important;
     text-transform: uppercase !important;
     color: #7a5c42 !important;
-    background: transparent !important;
-    transition: color 0.15s, border-color 0.15s !important;
+    margin: 0 !important;
+    line-height: 44px !important;
+    border-bottom: 2px solid transparent !important;
+    padding-bottom: 2px !important;
   }
-  [data-testid="stSidebarNavLink"]:hover {
+  [data-testid="stPageLink-NavLink"]:hover p { color: #c4622a !important; }
+  [data-testid="stPageLink-NavLink"][aria-current="page"] p,
+  [data-testid="stPageLink-NavLink"].active p {
     color: #c4622a !important;
-    background: transparent !important;
+    border-bottom-color: #c4622a !important;
   }
-  [data-testid="stSidebarNavLink"][aria-current="page"] {
-    color: #c4622a !important;
-    border-left: none !important;
-    border-bottom: 2px solid #c4622a !important;
-    background: transparent !important;
-    font-weight: 600 !important;
+  /* Logo link — larger Georgia serif */
+  .fn-logo-col [data-testid="stPageLink-NavLink"] p {
+    font-family: Georgia, serif !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.02em !important;
+    text-transform: none !important;
+    color: #2d1b0e !important;
   }
-  /* Nav link icons and text */
-  [data-testid="stSidebarNavLinkContainer"] span { color: inherit !important; }
-  /* Hide the home "app" link — logo handles home navigation */
-  [data-testid="stSidebarNavLink"][href="/"] { display: none !important; }
-
-  /* ── BACKGROUNDS ── */
-  .stApp,
-  [data-testid="stAppViewContainer"]   { background-color: #fdf6ec !important; }
-
-  /* ── MAIN CONTENT — clear the 44px top nav ── */
-  [data-testid="stMain"]               { padding-top: 52px !important; }
-  [data-testid="stMainBlockContainer"] {
-    padding-top: 24px !important;
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-    padding-bottom: 48px !important;
-    max-width: 1280px !important;
-  }
+  .fn-logo-col [data-testid="stPageLink-NavLink"]:hover p { color: #c4622a !important; }
 
   /* ── TYPOGRAPHY ── */
   h1, h2, h3, h4 {
@@ -239,13 +195,31 @@ THEME_CSS = """
 </style>
 """
 
-_LOGO_HTML = "FlavorNet"
-
 
 def inject_theme() -> None:
-    """Inject Editorial CSS + push FlavorNet logo into sidebar (rendered as top nav)."""
+    """Inject theme CSS and render top nav using st.page_link (Streamlit's native router)."""
     st.markdown(THEME_CSS, unsafe_allow_html=True)
-    st.sidebar.markdown(_LOGO_HTML)
+
+    # Nav bar using native st.page_link — Streamlit's own router handles navigation
+    with st.container():
+        logo_col, _, c1, c2, c3, c4 = st.columns([3, 4, 1, 1, 1, 1])
+        with logo_col:
+            st.markdown('<div class="fn-logo-col">', unsafe_allow_html=True)
+            st.page_link("app.py", label="FlavorNet")
+            st.markdown('</div>', unsafe_allow_html=True)
+        with c1:
+            st.page_link("pages/1_Search.py", label="Search")
+        with c2:
+            st.page_link("pages/2_Rate.py", label="Rate")
+        with c3:
+            st.page_link("pages/3_Graph.py", label="Graph")
+        with c4:
+            st.page_link("pages/4_Recipe.py", label="Recipe")
+
+    st.markdown(
+        '<div style="height:1px;background:#e8d5bc;margin:0 0 32px"></div>',
+        unsafe_allow_html=True,
+    )
 
 
 def pill_html(label: str) -> str:
