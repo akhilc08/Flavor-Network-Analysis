@@ -50,7 +50,7 @@ def _bce_link_pred_loss(
         edge_index=pos_edge_index,
         num_nodes=num_nodes,
         num_neg_samples=pos_edge_index.size(1),
-    )
+    ).long()
 
     src_neg = z_src[neg_edge_index[0]]
     dst_neg = z_dst[neg_edge_index[1]]
