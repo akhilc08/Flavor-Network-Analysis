@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-04-PLAN.md (train_gat.py training script + 2 tests green)
-last_updated: "2026-03-12T18:14:16.379Z"
+stopped_at: Completed 05-01-PLAN.md (scoring+active_learning Wave 0 scaffold, 10 tests collected)
+last_updated: "2026-03-15T18:14:39.504Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 25
-  completed_plans: 16
+  completed_plans: 17
   percent: 36
 ---
 
@@ -65,6 +65,7 @@ Progress: [████░░░░░░] 36%
 | Phase 04-model-training P02 | 7 | 1 tasks | 2 files |
 | Phase 04-model-training P01 | 6 | 2 tasks | 2 files |
 | Phase 04-model-training P04 | 15 | 2 tasks | 2 files |
+| Phase 05-scoring-and-active-learning P01 | 4 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,9 @@ Recent decisions affecting current work:
 - [Phase 04-04]: train_gat.py adds project root to sys.path so python model/train_gat.py works without PYTHONPATH
 - [Phase 04-04]: save_checkpoint_if_improved wraps conditional and returns bool — test API was authoritative over plan Task 2 code sample
 - [Phase 04-04]: CPU-first embedding export: model.to('cpu') before forward pass prevents MPS double-spike OOM during ingredient_embeddings.pkl export
+- [Phase 05-scoring-and-active-learning]: scoring/score.py implemented with full vectorized logic in Wave 0 (linter auto-completion); scoring tests pass early
+- [Phase 05-scoring-and-active-learning]: METADATA_PATH, AUC_GATE, FEEDBACK_PATH as monkeypatchable module-level constants in model/active_learning.py
+- [Phase 05-scoring-and-active-learning]: check_phase4_artifacts() warns (not raises) when graph/val_edges.pt or training_metadata.json missing — graceful degradation
 
 ### Pending Todos
 
@@ -134,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T18:14:10.108Z
-Stopped at: Completed 04-04-PLAN.md (train_gat.py training script + 2 tests green)
+Last session: 2026-03-15T18:14:39.500Z
+Stopped at: Completed 05-01-PLAN.md (scoring+active_learning Wave 0 scaffold, 10 tests collected)
 Resume file: None

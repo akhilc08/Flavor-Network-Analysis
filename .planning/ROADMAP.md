@@ -141,5 +141,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Feature Engineering | 3/4 | Complete    | 2026-03-12 |
 | 3. Graph Construction | 4/4 | Complete   | 2026-03-12 |
 | 4. Model Training | 4/4 | Complete   | 2026-03-12 |
-| 5. Scoring and Active Learning | 0/3 | Planned | - |
+| 5. Scoring and Active Learning | 1/3 | In Progress|  |
 | 6. Streamlit UI | 0/6 | Planned | - |

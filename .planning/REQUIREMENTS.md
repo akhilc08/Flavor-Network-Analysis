@@ -59,19 +59,19 @@
 
 ### Scoring
 
-- [ ] **SCORE-01**: Surprise score computed for all ingredient pairs: pairing_score × (1 - recipe_familiarity) × (1 - molecular_overlap × 0.5)
-- [ ] **SCORE-02**: pairing_score = dot product of embeddings; molecular_overlap = Jaccard of shared molecules; recipe_familiarity = co_occurrence_count / max_co_occurrence
-- [ ] **SCORE-03**: All pairs sorted by surprise_score descending and persisted to scoring/scored_pairs.pkl before app launch
-- [ ] **SCORE-04**: Human-readable surprise label assigned alongside float score ("Surprising", "Unexpected", "Classic")
+- [x] **SCORE-01**: Surprise score computed for all ingredient pairs: pairing_score × (1 - recipe_familiarity) × (1 - molecular_overlap × 0.5)
+- [x] **SCORE-02**: pairing_score = dot product of embeddings; molecular_overlap = Jaccard of shared molecules; recipe_familiarity = co_occurrence_count / max_co_occurrence
+- [x] **SCORE-03**: All pairs sorted by surprise_score descending and persisted to scoring/scored_pairs.pkl before app launch
+- [x] **SCORE-04**: Human-readable surprise label assigned alongside float score ("Surprising", "Unexpected", "Classic")
 
 ### Active Learning
 
-- [ ] **LEARN-01**: feedback.csv maintained with columns: ingredient_a, ingredient_b, user_rating (1–5), timestamp
-- [ ] **LEARN-02**: Active learning query surfaces top-20 pairs where pairing_score is closest to 0.5 (maximum model uncertainty)
-- [ ] **LEARN-03**: On user rating submission: append to feedback.csv, fine-tune model for 10 epochs using experience replay (feedback batch mixed with 5× original training pairs), learning rate 10× lower than base
-- [ ] **LEARN-04**: Model checkpoint saved before each fine-tune round; embeddings and scored_pairs re-exported after fine-tuning
-- [ ] **LEARN-05**: Validation AUC ≥ 0.70 required before active learning loop is enabled in the UI; gate enforced at app startup
-- [ ] **LEARN-06**: AUC before and after each fine-tune round tracked and available for display
+- [x] **LEARN-01**: feedback.csv maintained with columns: ingredient_a, ingredient_b, user_rating (1–5), timestamp
+- [x] **LEARN-02**: Active learning query surfaces top-20 pairs where pairing_score is closest to 0.5 (maximum model uncertainty)
+- [x] **LEARN-03**: On user rating submission: append to feedback.csv, fine-tune model for 10 epochs using experience replay (feedback batch mixed with 5× original training pairs), learning rate 10× lower than base
+- [x] **LEARN-04**: Model checkpoint saved before each fine-tune round; embeddings and scored_pairs re-exported after fine-tuning
+- [x] **LEARN-05**: Validation AUC ≥ 0.70 required before active learning loop is enabled in the UI; gate enforced at app startup
+- [x] **LEARN-06**: AUC before and after each fine-tune round tracked and available for display
 
 ### Streamlit UI
 
