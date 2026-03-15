@@ -2,39 +2,66 @@ import streamlit as st
 
 THEME_CSS = """
 <style>
-  /* ── Hide all Streamlit chrome ── */
-  header[data-testid="stHeader"] { display: none !important; }
-  [data-testid="stToolbar"] { display: none !important; }
-  #MainMenu { display: none !important; }
-  footer { display: none !important; }
-  [data-testid="stDeployButton"] { display: none !important; }
-  button[kind="header"] { display: none !important; }
-  .stAppDeployButton { display: none !important; }
-  [data-testid="manage-app-button"] { display: none !important; }
+  /* ── HIDE STREAMLIT CHROME (Streamlit 1.55 correct selectors) ── */
+  [data-testid="stAppHeader"]          { display: none !important; }
+  [data-testid="stAppToolbar"]         { display: none !important; }
+  [data-testid="stToolbar"]            { display: none !important; }
+  [data-testid="stAppDeployButton"]    { display: none !important; }
+  [data-testid="stMainMenu"]           { display: none !important; }
+  [data-testid="stMainMenuButton"]     { display: none !important; }
+  #MainMenu                            { display: none !important; }
+  footer                               { display: none !important; }
 
-  /* ── App background ── */
-  .stApp { background-color: #fdf6ec !important; }
-  .main .block-container {
-    padding-top: 16px !important;
-    padding-bottom: 40px !important;
-    max-width: 1200px !important;
+  /* ── BACKGROUNDS ── */
+  .stApp,
+  [data-testid="stAppViewContainer"]   { background-color: #fdf6ec !important; }
+
+  /* ── MAIN CONTENT AREA — remove top gap left by hidden header ── */
+  [data-testid="stMain"]               { padding-top: 0 !important; }
+  [data-testid="stMainBlockContainer"] {
+    padding-top: 24px !important;
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+    padding-bottom: 48px !important;
+    max-width: 1280px !important;
   }
 
-  /* ── Sidebar ── */
-  [data-testid="stSidebar"] {
-    background-color: #f0e6d3 !important;
-    border-right: 1px solid #e8d5bc !important;
-  }
-  [data-testid="stSidebar"] * { color: #2d1b0e !important; }
-  [data-testid="stSidebarNav"] a {
+  /* ── SIDEBAR ── */
+  [data-testid="stSidebar"]            { background-color: #f0e6d3 !important; border-right: 1px solid #e8d5bc !important; }
+  [data-testid="stSidebarHeader"]      { background-color: #f0e6d3 !important; border-bottom: 1px solid #e8d5bc !important; padding: 20px 24px 16px !important; }
+  [data-testid="stSidebarContent"]     { background-color: #f0e6d3 !important; }
+  [data-testid="stSidebarUserContent"] { padding: 16px 0 !important; }
+
+  /* Sidebar nav links */
+  [data-testid="stSidebarNavItems"]    { padding: 0 !important; }
+  [data-testid="stSidebarNavLink"]     {
+    padding: 10px 24px !important;
+    border-radius: 0 !important;
     font-family: system-ui, sans-serif !important;
-    font-size: 13px !important;
-    letter-spacing: 0.02em !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
     color: #2d1b0e !important;
+    background: transparent !important;
+    border-left: 3px solid transparent !important;
+    transition: background 0.15s, color 0.15s !important;
   }
-  [data-testid="stSidebarNav"] a:hover { color: #c4622a !important; }
+  [data-testid="stSidebarNavLink"]:hover {
+    background: rgba(196,98,42,0.07) !important;
+    color: #c4622a !important;
+  }
+  [data-testid="stSidebarNavLink"][aria-current="page"] {
+    background: rgba(196,98,42,0.1) !important;
+    color: #c4622a !important;
+    font-weight: 600 !important;
+    border-left: 3px solid #c4622a !important;
+  }
+  /* Sidebar nav link icons and text */
+  [data-testid="stSidebarNavLinkContainer"] span { color: inherit !important; }
+  [data-testid="stSidebar"] p,
+  [data-testid="stSidebar"] span,
+  [data-testid="stSidebar"] div { color: #2d1b0e !important; }
 
-  /* ── Typography ── */
+  /* ── TYPOGRAPHY ── */
   h1, h2, h3, h4 {
     font-family: Georgia, serif !important;
     color: #2d1b0e !important;
@@ -43,57 +70,63 @@ THEME_CSS = """
   h1 { font-size: 32px !important; line-height: 1.2 !important; }
   h2 { font-size: 24px !important; line-height: 1.25 !important; }
   h3 { font-size: 18px !important; line-height: 1.3 !important; }
-  p, li, label, .stMarkdown p {
+  p, li, label {
     font-family: system-ui, sans-serif !important;
     color: #2d1b0e !important;
     line-height: 1.6 !important;
   }
 
-  /* ── Selection highlight ── */
-  ::selection { background: rgba(196,98,42,0.2) !important; }
+  /* ── SELECTION ── */
+  ::selection { background: rgba(196,98,42,0.2); }
 
-  /* ── Remove ALL blue from Streamlit defaults ── */
+  /* ── STRIP ALL BLUE ── */
   a { color: #c4622a !important; }
   a:hover { color: #a84e22 !important; }
-  .stSelectbox [data-baseweb="select"] *,
-  [data-baseweb="tab-highlight"] { background-color: #c4622a !important; }
-  [data-testid="stTickBarMin"], [data-testid="stTickBarMax"] { color: #7a5c42 !important; }
-  .stSlider [data-baseweb="slider"] [data-testid="stThumbValue"] { color: #2d1b0e !important; }
-  .stSlider [role="slider"] { background-color: #c4622a !important; border-color: #c4622a !important; }
-  .stSlider [data-baseweb="slider"] div[style*="background"] { background-color: #c4622a !important; }
+  [data-baseweb="tab-highlight"]              { background-color: #c4622a !important; }
+  [data-testid="stBaseButton-primary"]        { background-color: #c4622a !important; border-color: #c4622a !important; }
+  [data-testid="stBaseButton-primary"]:hover  { background-color: #a84e22 !important; }
 
-  /* ── Inputs ── */
-  .stTextInput input {
+  /* ── TEXT INPUT ── */
+  .stTextInput input, [data-testid="stTextInput"] input {
     font-family: Georgia, serif !important;
     background-color: #fff8f0 !important;
-    border: 1px solid #e8d5bc !important;
+    border: 1.5px solid #e8d5bc !important;
     border-radius: 4px !important;
     color: #2d1b0e !important;
-    font-size: 15px !important;
+    font-size: 16px !important;
+    padding: 10px 14px !important;
   }
-  .stTextInput input:focus {
+  .stTextInput input:focus, [data-testid="stTextInput"] input:focus {
     border-color: #c4622a !important;
-    box-shadow: 0 0 0 1px rgba(196,98,42,0.25) !important;
+    box-shadow: 0 0 0 1px rgba(196,98,42,0.2) !important;
+    outline: none !important;
   }
-  .stTextInput label {
+  .stTextInput label, [data-testid="stTextInput"] label {
     font-family: system-ui, sans-serif !important;
     font-size: 10px !important;
     font-weight: 600 !important;
-    letter-spacing: 0.1em !important;
+    letter-spacing: 0.12em !important;
     text-transform: uppercase !important;
     color: #7a5c42 !important;
   }
 
-  /* ── Selectbox / multiselect ── */
-  [data-baseweb="select"] {
+  /* ── SELECT / MULTISELECT ── */
+  [data-baseweb="select"] > div {
     background-color: #fff8f0 !important;
     border-color: #e8d5bc !important;
+    border-radius: 4px !important;
   }
-  [data-baseweb="select"] input { color: #2d1b0e !important; }
-  [data-baseweb="select"] [data-testid="stMarkdownContainer"] { color: #2d1b0e !important; }
+  [data-baseweb="select"] input { color: #2d1b0e !important; font-family: Georgia, serif !important; }
+  [data-baseweb="menu"]          { background-color: #fff8f0 !important; border: 1px solid #e8d5bc !important; }
+  [data-baseweb="option"]        { background-color: #fff8f0 !important; color: #2d1b0e !important; }
+  [data-baseweb="option"]:hover  { background-color: #f0e6d3 !important; }
+  [data-baseweb="tag"]           { background-color: rgba(196,98,42,0.1) !important; color: #c4622a !important; }
 
-  /* ── Buttons ── */
-  .stButton > button {
+  /* ── BUTTONS ── */
+  .stButton > button,
+  button[kind="primary"],
+  button[data-testid="stBaseButton-primary"],
+  button[data-testid="stBaseButton-secondary"] {
     background-color: #c4622a !important;
     color: #fff !important;
     border: none !important;
@@ -103,72 +136,68 @@ THEME_CSS = """
     font-weight: 600 !important;
     letter-spacing: 0.08em !important;
     text-transform: uppercase !important;
-    padding: 8px 20px !important;
+    padding: 10px 24px !important;
+    cursor: pointer !important;
   }
-  .stButton > button:hover { background-color: #a84e22 !important; }
-  .stButton > button:focus { box-shadow: 0 0 0 2px rgba(196,98,42,0.3) !important; }
+  .stButton > button:hover,
+  button[kind="primary"]:hover { background-color: #a84e22 !important; }
 
-  /* ── Expander (used in rate page fallback) ── */
-  .stExpander,
-  [data-testid="stExpander"] {
-    background-color: #fff8f0 !important;
-    border: 1px solid #e8d5bc !important;
-    border-radius: 4px !important;
-  }
-
-  /* ── Table overrides ── */
-  table { border-collapse: collapse !important; width: auto !important; }
-  th {
-    background-color: #f0e6d3 !important;
-    color: #2d1b0e !important;
+  /* ── SLIDERS ── */
+  [role="slider"]                                              { background-color: #c4622a !important; border-color: #c4622a !important; }
+  [data-testid="stSlider"] [data-baseweb="slider"] div[class] { background-color: #c4622a !important; }
+  .stSlider label {
     font-family: system-ui, sans-serif !important;
     font-size: 10px !important;
     font-weight: 600 !important;
     letter-spacing: 0.1em !important;
     text-transform: uppercase !important;
-    border: 1px solid #e8d5bc !important;
-    padding: 8px 16px !important;
-  }
-  td {
-    background-color: #fff8f0 !important;
-    color: #2d1b0e !important;
-    border: 1px solid #e8d5bc !important;
-    padding: 8px 16px !important;
-    font-family: Georgia, serif !important;
-  }
-  tr:hover td { background-color: #f5ead6 !important; }
-
-  /* ── HR / dividers ── */
-  hr { border-color: #e8d5bc !important; margin: 24px 0 !important; }
-
-  /* ── Metrics ── */
-  [data-testid="stMetricValue"] {
-    font-family: Georgia, serif !important;
-    color: #2d1b0e !important;
-  }
-  [data-testid="stMetricLabel"] {
-    font-family: system-ui, sans-serif !important;
-    font-size: 10px !important;
-    letter-spacing: 0.1em !important;
-    text-transform: uppercase !important;
     color: #7a5c42 !important;
   }
 
-  /* ── Info / warning / success boxes ── */
-  [data-testid="stAlert"] {
-    border-radius: 4px !important;
-    border-left: 3px solid #c4622a !important;
-  }
+  /* ── METRICS ── */
+  [data-testid="stMetricValue"] { font-family: Georgia, serif !important; color: #2d1b0e !important; font-size: 28px !important; }
+  [data-testid="stMetricLabel"] { font-family: system-ui !important; font-size: 10px !important; letter-spacing: 0.1em !important; text-transform: uppercase !important; color: #7a5c42 !important; }
+  [data-testid="stMetricDelta"] { font-family: Georgia, serif !important; }
 
-  /* ── Spinner ── */
-  .stSpinner > div { border-top-color: #c4622a !important; }
+  /* ── ALERTS ── */
+  [data-testid="stAlert"] { background-color: #fff8f0 !important; border-radius: 4px !important; border: 1px solid #e8d5bc !important; border-left: 3px solid #c4622a !important; }
+  [data-testid="stAlert"] p { color: #2d1b0e !important; }
+
+  /* ── SPINNER ── */
+  [data-testid="stSpinner"] > div { border-top-color: #c4622a !important; }
+
+  /* ── TABLES ── */
+  table { border-collapse: collapse !important; }
+  th { background-color: #f0e6d3 !important; color: #2d1b0e !important; font-family: system-ui !important; font-size: 10px !important; font-weight: 600 !important; letter-spacing: 0.1em !important; text-transform: uppercase !important; border: 1px solid #e8d5bc !important; padding: 8px 16px !important; }
+  td { background-color: #fff8f0 !important; color: #2d1b0e !important; border: 1px solid #e8d5bc !important; padding: 8px 16px !important; font-family: Georgia, serif !important; }
+  tr:hover td { background-color: #f5ead6 !important; }
+
+  /* ── DIVIDERS ── */
+  hr { border-color: #e8d5bc !important; margin: 24px 0 !important; }
 </style>
 """
 
 
+_SIDEBAR_HEADER = """
+<div style="padding:4px 0 20px">
+  <div style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:#2d1b0e;letter-spacing:-0.01em;line-height:1.2">
+    Flavor Pairing<br><span style="color:#c4622a">Network</span>
+  </div>
+  <div style="font-family:system-ui;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;margin-top:4px">
+    Molecular gastronomy
+  </div>
+</div>
+<div style="height:1px;background:#e8d5bc;margin:0 -16px 20px"></div>
+<div style="font-family:system-ui;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#7a5c42;font-weight:600;margin-bottom:4px">
+  Navigation
+</div>
+"""
+
+
 def inject_theme() -> None:
-    """Inject Editorial CSS theme. Call as first action in every page."""
+    """Inject Editorial CSS theme + sidebar header. Call as first action in every page."""
     st.markdown(THEME_CSS, unsafe_allow_html=True)
+    st.sidebar.markdown(_SIDEBAR_HEADER, unsafe_allow_html=True)
 
 
 def pill_html(label: str) -> str:
