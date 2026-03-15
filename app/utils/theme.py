@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
 THEME_CSS = """
 <style>
@@ -191,27 +192,56 @@ THEME_CSS = """
 </style>
 """
 
-# Active page is highlighted via JS: window.location.pathname checked against data-page attribute.
-# Home page (/) has no matching data-page value, so all links stay inactive — correct behavior.
-_TOP_NAV = """
-<div id="fn-topnav">
-  <a class="fn-logo" onclick="window.location.href='/'" style="cursor:pointer;">FlavorNet</a>
-  <nav style="display:flex;align-items:stretch;gap:0;">
-    <a class="fn-nav-link" data-page="1_Search" onclick="window.location.href='/1_Search'" style="cursor:pointer;">Search</a>
-    <a class="fn-nav-link" data-page="2_Rate"   onclick="window.location.href='/2_Rate'"   style="cursor:pointer;">Rate</a>
-    <a class="fn-nav-link" data-page="3_Graph"  onclick="window.location.href='/3_Graph'"  style="cursor:pointer;">Graph</a>
-    <a class="fn-nav-link" data-page="4_Recipe" onclick="window.location.href='/4_Recipe'" style="cursor:pointer;">Recipe</a>
-  </nav>
-</div>
+# Injected via components.html (real iframe) so scripts actually execute.
+# Uses window.parent to manipulate the Streamlit page DOM directly.
+_NAV_INJECTOR = """
 <script>
 (function() {
-  var path = window.location.pathname;
-  document.querySelectorAll('#fn-topnav .fn-nav-link').forEach(function(link) {
-    var page = link.getAttribute('data-page');
-    if (path.indexOf(page) !== -1) {
-      link.classList.add('active');
-    }
-  });
+  try {
+    var doc = window.parent.document;
+    var loc = window.parent.location;
+
+    // Remove stale nav on re-render
+    var existing = doc.getElementById('fn-topnav');
+    if (existing) { existing.remove(); }
+
+    var nav = doc.createElement('div');
+    nav.id = 'fn-topnav';
+
+    // Logo
+    var logo = doc.createElement('a');
+    logo.className = 'fn-logo';
+    logo.textContent = 'FlavorNet';
+    logo.style.cursor = 'pointer';
+    logo.addEventListener('click', function() { loc.href = '/'; });
+    nav.appendChild(logo);
+
+    // Nav links
+    var navEl = doc.createElement('nav');
+    navEl.style.cssText = 'display:flex;align-items:stretch;gap:0;';
+
+    var path = loc.pathname;
+    var pages = [
+      ['/1_Search', 'Search', '1_Search'],
+      ['/2_Rate',   'Rate',   '2_Rate'],
+      ['/3_Graph',  'Graph',  '3_Graph'],
+      ['/4_Recipe', 'Recipe', '4_Recipe']
+    ];
+
+    pages.forEach(function(p) {
+      var href = p[0], label = p[1], page = p[2];
+      var a = doc.createElement('a');
+      a.className = 'fn-nav-link' + (path.indexOf(page) !== -1 ? ' active' : '');
+      a.setAttribute('data-page', page);
+      a.textContent = label;
+      a.style.cursor = 'pointer';
+      a.addEventListener('click', function() { loc.href = href; });
+      navEl.appendChild(a);
+    });
+
+    nav.appendChild(navEl);
+    doc.body.appendChild(nav);
+  } catch(e) {}
 })();
 </script>
 """
@@ -220,7 +250,7 @@ _TOP_NAV = """
 def inject_theme() -> None:
     """Inject Editorial CSS theme + sticky top nav. Call as first action in every page."""
     st.markdown(THEME_CSS, unsafe_allow_html=True)
-    st.markdown(_TOP_NAV, unsafe_allow_html=True)
+    components.html(_NAV_INJECTOR, height=0)
 
 
 def pill_html(label: str) -> str:
