@@ -195,12 +195,12 @@ THEME_CSS = """
 # Home page (/) has no matching data-page value, so all links stay inactive — correct behavior.
 _TOP_NAV = """
 <div id="fn-topnav">
-  <a href="/" target="_self" class="fn-logo">FlavorNet</a>
+  <a class="fn-logo" onclick="window.location.href='/'" style="cursor:pointer;">FlavorNet</a>
   <nav style="display:flex;align-items:stretch;gap:0;">
-    <a href="/1_Search" target="_self" class="fn-nav-link" data-page="1_Search">Search</a>
-    <a href="/2_Rate"   target="_self" class="fn-nav-link" data-page="2_Rate">Rate</a>
-    <a href="/3_Graph"  target="_self" class="fn-nav-link" data-page="3_Graph">Graph</a>
-    <a href="/4_Recipe" target="_self" class="fn-nav-link" data-page="4_Recipe">Recipe</a>
+    <a class="fn-nav-link" data-page="1_Search" onclick="window.location.href='/1_Search'" style="cursor:pointer;">Search</a>
+    <a class="fn-nav-link" data-page="2_Rate"   onclick="window.location.href='/2_Rate'"   style="cursor:pointer;">Rate</a>
+    <a class="fn-nav-link" data-page="3_Graph"  onclick="window.location.href='/3_Graph'"  style="cursor:pointer;">Graph</a>
+    <a class="fn-nav-link" data-page="4_Recipe" onclick="window.location.href='/4_Recipe'" style="cursor:pointer;">Recipe</a>
   </nav>
 </div>
 <script>
