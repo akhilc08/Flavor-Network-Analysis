@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 06-03-PLAN.md (Active Learning Rating page: rate.py utilities, 2_Rate.py with AUC gate, 4 real tests)"
-last_updated: "2026-03-15T19:57:42.087Z"
+stopped_at: "Completed 06-04-PLAN.md (Flavor Graph Explorer: PyVis network, selectbox pivot, 3 TDD tests green)"
+last_updated: "2026-03-15T20:00:51.533Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 25
-  completed_plans: 22
+  completed_plans: 23
   percent: 36
 ---
 
@@ -71,6 +71,7 @@ Progress: [████░░░░░░] 36%
 | Phase 06-streamlit-ui P01 | 8 | 2 tasks | 11 files |
 | Phase 06-streamlit-ui P02 | 5 | 2 tasks | 6 files |
 | Phase 06-streamlit-ui P03 | 2 | 2 tasks | 3 files |
+| Phase 06-streamlit-ui P04 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,9 @@ Recent decisions affecting current work:
 - [Phase 06-02]: Tests must be run via modal run modal_test.py — local pytest skipped per MEMORY.md critical constraint (torch imports spike RAM)
 - [Phase 06-03]: test_ui_rate.py promoted from 2 xfail stubs to 4 real tests — added zero-rating skip and empty-ratings-map branch tests for complete submit_all_ratings coverage
 - [Phase 06-03]: Rate page tests must run via modal run modal_test.py — model/active_learning.py imports torch at module level causing local RAM spike
+- [Phase 06-04]: PyVis click-to-pivot replaced by st.selectbox — click events cannot reach Python through components.html (RESEARCH.md confirmed)
+- [Phase 06-04]: get_graph_html uses generate_html() with AttributeError fallback to save_graph(tmp) for pyvis 0.3.x compatibility
+- [Phase 06-04]: build_pyvis_graph is pure (returns Network, no Streamlit) — enables test isolation without running server
 
 ### Pending Todos
 
@@ -154,6 +158,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:57:42.082Z
-Stopped at: Completed 06-03-PLAN.md (Active Learning Rating page: rate.py utilities, 2_Rate.py with AUC gate, 4 real tests)
+Last session: 2026-03-15T20:00:51.529Z
+Stopped at: Completed 06-04-PLAN.md (Flavor Graph Explorer: PyVis network, selectbox pivot, 3 TDD tests green)
 Resume file: None
