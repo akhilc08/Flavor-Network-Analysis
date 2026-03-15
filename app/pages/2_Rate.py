@@ -1,8 +1,12 @@
 """Page 2 — Active Learning Rating (UI-03)."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import streamlit as st
-from app.utils.theme import inject_theme, pill_html
-from app.utils.cache import require_scored_pairs, invalidate_scored_pairs
-from app.utils.rate import get_uncertain_pairs_for_display, submit_all_ratings
+from utils.theme import inject_theme, pill_html
+from utils.cache import require_scored_pairs, invalidate_scored_pairs
+from utils.rate import get_uncertain_pairs_for_display, submit_all_ratings
 
 inject_theme()
 st.title("Rate Uncertain Pairs")

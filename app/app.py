@@ -4,7 +4,7 @@ Entry point. Run with: streamlit run app/app.py
 Pages auto-discovered from app/pages/ directory.
 """
 import streamlit as st
-from app.utils.theme import inject_theme
+from utils.theme import inject_theme
 
 st.set_page_config(
     page_title="Flavor Pairing Network",

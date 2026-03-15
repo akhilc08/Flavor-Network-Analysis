@@ -1,12 +1,15 @@
 """Page 4 — Recipe Generation (UI-05)."""
 from __future__ import annotations
 import os
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
 import streamlit as st
 
-from app.utils.theme import inject_theme, pill_html, molecule_tag_html
-from app.utils.cache import require_scored_pairs
+from utils.theme import inject_theme, pill_html, molecule_tag_html
+from utils.cache import require_scored_pairs
 
 inject_theme()
 st.title("AI Recipe Generation")

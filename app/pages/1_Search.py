@@ -1,8 +1,12 @@
 """Page 1 — Ingredient Search (UI-01, UI-02)."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import streamlit as st
-from app.utils.theme import inject_theme, pill_html, molecule_tag_html
-from app.utils.cache import require_scored_pairs
-from app.utils.search import get_top_pairings, build_radar_chart, format_why_it_works
+from utils.theme import inject_theme, pill_html, molecule_tag_html
+from utils.cache import require_scored_pairs
+from utils.search import get_top_pairings, build_radar_chart, format_why_it_works
 
 inject_theme()
 st.title("Ingredient Search")

@@ -1,9 +1,13 @@
 """Page 3 — Flavor Graph Explorer (UI-04)."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import streamlit as st
 import streamlit.components.v1 as components
-from app.utils.theme import inject_theme
-from app.utils.cache import require_scored_pairs
-from app.utils.graph import build_pyvis_graph, get_graph_html
+from utils.theme import inject_theme
+from utils.cache import require_scored_pairs
+from utils.graph import build_pyvis_graph, get_graph_html
 
 inject_theme()
 st.title("Flavor Graph Explorer")
