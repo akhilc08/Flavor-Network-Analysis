@@ -79,7 +79,7 @@
 - [x] **UI-02**: Page 1 — "Why this works" section per pairing: shared flavor compounds listed in plain English with their flavor descriptors
 - [x] **UI-03**: Page 2 — Shows top 5 most uncertain pairs (active learning candidates); user rates each 1–5 stars; submit triggers fine-tuning; "model updated" confirmation shown with AUC delta
 - [x] **UI-04**: Page 3 — PyVis interactive graph centered on selected ingredient; ≤50 nodes to prevent browser crash; nodes sized by pairing_score with center ingredient; edges colored by surprise_score (red=surprising, blue=expected); click node to pivot graph
-- [ ] **UI-05**: Page 4 — Select 2–3 ingredients from surprise pairs; calls Anthropic SDK (claude-sonnet-4-6) with shared flavor compounds, texture profiles, and cultural context; generates recipe with molecular pairing rationale; prompt instructs Claude to explain why these ingredients work together scientifically
+- [x] **UI-05**: Page 4 — Select 2–3 ingredients from surprise pairs; calls Anthropic SDK (claude-sonnet-4-6) with shared flavor compounds, texture profiles, and cultural context; generates recipe with molecular pairing rationale; prompt instructs Claude to explain why these ingredients work together scientifically
 - [x] **UI-06**: All pages use @st.cache_resource for embeddings and model (loaded once per process); cache cleared after active learning fine-tune completes
 - [x] **UI-07**: No raw stack traces visible to users; all errors shown as friendly messages
 

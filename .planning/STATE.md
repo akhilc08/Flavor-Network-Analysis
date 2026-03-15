@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 06-04-PLAN.md (Flavor Graph Explorer: PyVis network, selectbox pivot, 3 TDD tests green)"
-last_updated: "2026-03-15T20:00:51.533Z"
+stopped_at: "Completed 06-05-PLAN.md (Recipe Generation: Anthropic SDK streaming, molecular rationale prompt, API key guard)"
+last_updated: "2026-03-15T20:03:08.450Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
   percent: 36
 ---
 
@@ -72,6 +72,7 @@ Progress: [████░░░░░░] 36%
 | Phase 06-streamlit-ui P02 | 5 | 2 tasks | 6 files |
 | Phase 06-streamlit-ui P03 | 2 | 2 tasks | 3 files |
 | Phase 06-streamlit-ui P04 | 5 | 2 tasks | 3 files |
+| Phase 06-streamlit-ui P05 | 3 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,8 @@ Recent decisions affecting current work:
 - [Phase 06-04]: PyVis click-to-pivot replaced by st.selectbox — click events cannot reach Python through components.html (RESEARCH.md confirmed)
 - [Phase 06-04]: get_graph_html uses generate_html() with AttributeError fallback to save_graph(tmp) for pyvis 0.3.x compatibility
 - [Phase 06-04]: build_pyvis_graph is pure (returns Network, no Streamlit) — enables test isolation without running server
+- [Phase 06-05]: UI-05 testing is manual-only: mocking Anthropic SDK streaming would only test the wrapper; no automated test file created
+- [Phase 06-05]: stream_recipe() uses stream.text_stream iterator (not raw stream) — raw stream passed to st.write_stream() yields JSON event dicts
 
 ### Pending Todos
 
@@ -158,6 +161,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T20:00:51.529Z
-Stopped at: Completed 06-04-PLAN.md (Flavor Graph Explorer: PyVis network, selectbox pivot, 3 TDD tests green)
+Last session: 2026-03-15T20:03:08.446Z
+Stopped at: Completed 06-05-PLAN.md (Recipe Generation: Anthropic SDK streaming, molecular rationale prompt, API key guard)
 Resume file: None
