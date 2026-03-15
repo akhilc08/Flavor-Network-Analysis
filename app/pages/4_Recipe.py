@@ -8,23 +8,41 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import anthropic
 import streamlit as st
 
-from utils.theme import inject_theme, pill_html, molecule_tag_html
+from utils.theme import inject_theme, molecule_tag_html
 from utils.cache import require_scored_pairs
 
 inject_theme()
-st.title("AI Recipe Generation")
+
+# Editorial page header
 st.markdown(
-    '<p class="subtext">Generate a recipe with molecular flavor pairing rationale</p>',
+    """
+    <div style="margin-bottom:32px">
+      <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:400;color:#2d1b0e;margin-bottom:4px">
+        AI Recipe Generation
+      </h1>
+      <p style="font-family:system-ui;font-size:13px;color:#7a5c42;letter-spacing:0.02em;margin:0">
+        Molecular rationale &middot; Written by Claude
+      </p>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
-# Check for API key early — friendly error, not KeyError
+# Check for API key early
 api_key = os.environ.get("ANTHROPIC_API_KEY")
 if not api_key:
-    st.error(
-        "ANTHROPIC_API_KEY environment variable is not set.\n\n"
-        "Set it before running the app:\n\n"
-        "```\nexport ANTHROPIC_API_KEY=sk-ant-...\nstreamlit run app/app.py\n```"
+    st.markdown(
+        '<div style="background:rgba(196,98,42,0.08);border:1px solid rgba(196,98,42,0.25);'
+        'border-radius:4px;padding:20px 24px">'
+        '<div style="font-family:system-ui;font-size:10px;font-weight:600;letter-spacing:0.1em;'
+        'text-transform:uppercase;color:#c4622a;margin-bottom:8px">API key required</div>'
+        '<p style="font-family:system-ui;font-size:13px;color:#7a5c42;margin:0;line-height:1.6">'
+        'Set <code style="background:#fdf6ec;border:1px solid #e8d5bc;border-radius:2px;'
+        'padding:1px 6px;font-size:12px">ANTHROPIC_API_KEY</code> before running the app:'
+        '<br><br><code style="background:#fdf6ec;border:1px solid #e8d5bc;border-radius:2px;'
+        'padding:4px 8px;font-size:12px">export ANTHROPIC_API_KEY=sk-ant-...</code></p>'
+        '</div>',
+        unsafe_allow_html=True,
     )
     st.stop()
 
@@ -54,20 +72,24 @@ def build_recipe_prompt(
     """Build the recipe generation prompt with molecular context."""
     ingredient_list = ", ".join(i.title() for i in ingredients)
 
-    # Build molecular rationale context
     molecule_context_parts = []
     for pair_key, molecules in shared_molecules_map.items():
         if molecules:
             mol_str = ", ".join(molecules[:5])
             molecule_context_parts.append(f"  - {pair_key}: shares {mol_str}")
-    molecule_context = "\n".join(molecule_context_parts) if molecule_context_parts else "  - (molecular data not available)"
+    molecule_context = (
+        "\n".join(molecule_context_parts)
+        if molecule_context_parts
+        else "  - (molecular data not available)"
+    )
 
-    # Build label context
-    label_context = "; ".join(
-        f"{i.title()} is a '{v}' pairing" for i, v in flavor_labels.items()
-    ) if flavor_labels else ""
+    label_context = (
+        "; ".join(f"{i.title()} is a '{v}' pairing" for i, v in flavor_labels.items())
+        if flavor_labels
+        else ""
+    )
 
-    prompt = f"""You are a culinary scientist and chef. Create a recipe using these molecularly paired ingredients: {ingredient_list}.
+    return f"""You are a culinary scientist and chef. Create a recipe using these molecularly paired ingredients: {ingredient_list}.
 
 Molecular flavor context:
 {molecule_context}
@@ -83,24 +105,45 @@ Your recipe MUST:
 
 Write for a curious food lover who appreciates both great cooking and the science behind it. Be specific about the flavor compounds."""
 
-    return prompt
+
+def pill_html_inline(label: str) -> str:
+    """Compact pill for inline display next to ingredient names."""
+    label_lower = label.lower()
+    pill_styles = {
+        "surprising": (
+            "background:rgba(74,124,78,0.12);color:#4a7c4e;"
+            "border:1px solid rgba(74,124,78,0.25)"
+        ),
+        "unexpected": (
+            "background:rgba(184,134,11,0.12);color:#b8860b;"
+            "border:1px solid rgba(184,134,11,0.25)"
+        ),
+        "classic": (
+            "background:rgba(196,98,42,0.1);color:#c4622a;"
+            "border:1px solid rgba(196,98,42,0.25)"
+        ),
+    }
+    style = pill_styles.get(label_lower, pill_styles["classic"])
+    base = (
+        "font-family:system-ui;font-size:11px;font-weight:600;"
+        "letter-spacing:0.08em;text-transform:uppercase;"
+        "padding:3px 8px;border-radius:2px;display:inline-block;margin-right:8px;"
+    )
+    return f'<span style="{base}{style}">{label}</span>'
 
 
 try:
     pairs = require_scored_pairs()
 
-    # Get top surprising pairs for ingredient selection
-    top_surprise = [
-        p for p in pairs
-        if getattr(p, "label", "") == "Surprising"
-    ][:20]
-
+    top_surprise = [p for p in pairs if getattr(p, "label", "") == "Surprising"][:20]
     if not top_surprise:
-        # Fallback: use top pairs by surprise_score
-        top_surprise = sorted(pairs, key=lambda p: getattr(p, "surprise_score", 0), reverse=True)[:20]
+        top_surprise = sorted(
+            pairs, key=lambda p: getattr(p, "surprise_score", 0), reverse=True
+        )[:20]
 
     ingredient_options = list(dict.fromkeys(
-        name for p in top_surprise
+        name
+        for p in top_surprise
         for name in [getattr(p, "ingredient_a", ""), getattr(p, "ingredient_b", "")]
         if name
     ))
@@ -109,74 +152,100 @@ try:
         st.warning("No ingredient data available. Run the pipeline first.")
         st.stop()
 
-    st.markdown("**Select 2–3 ingredients from your top surprise pairs:**")
+    st.markdown(
+        '<p style="font-family:system-ui;font-size:13px;color:#7a5c42;line-height:1.6;margin-bottom:16px">'
+        "Select 2\u20133 ingredients from the most surprising pairs in your dataset. "
+        "Claude will generate a recipe with molecular flavor rationale."
+        "</p>",
+        unsafe_allow_html=True,
+    )
+
     selected = st.multiselect(
-        "Ingredients",
+        "SELECT INGREDIENTS",
         options=ingredient_options,
         max_selections=3,
-        placeholder="Choose 2–3 ingredients...",
+        placeholder="Choose 2\u20133 ingredients\u2026",
     )
 
     if len(selected) < 2:
-        st.info("Select at least 2 ingredients to generate a recipe.")
+        st.markdown(
+            '<p style="font-family:Georgia,serif;font-size:14px;font-style:italic;'
+            'color:#7a5c42;margin-top:8px">Select at least 2 ingredients to continue.</p>',
+            unsafe_allow_html=True,
+        )
         st.stop()
 
-    # Display selected ingredients with their labels
-    st.markdown("**Selected ingredients:**")
+    # Selected ingredients with editorial pill display
+    st.markdown('<div style="margin:20px 0 8px">', unsafe_allow_html=True)
     for ing in selected:
         pair_match = next(
-            (p for p in pairs if getattr(p, "ingredient_a", "") == ing
+            (p for p in pairs
+             if getattr(p, "ingredient_a", "") == ing
              or getattr(p, "ingredient_b", "") == ing),
-            None
+            None,
         )
-        label = getattr(pair_match, "label", "Unknown") if pair_match else "Unknown"
-        st.markdown(pill_html(label) + f" **{ing.title()}**", unsafe_allow_html=True)
+        label = getattr(pair_match, "label", "Classic") if pair_match else "Classic"
+        st.markdown(
+            f'<div style="display:flex;align-items:center;margin-bottom:8px">'
+            f'{pill_html_inline(label)}'
+            f'<span style="font-family:Georgia,serif;font-size:18px;color:#2d1b0e">{ing.title()}</span>'
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Build shared molecules map for prompt context
+    # Build shared molecules map
     shared_molecules_map: dict[str, list[str]] = {}
     for i, ing_a in enumerate(selected):
-        for ing_b in selected[i+1:]:
+        for ing_b in selected[i + 1:]:
             pair_match = next(
                 (p for p in pairs
                  if (getattr(p, "ingredient_a", "") == ing_a and getattr(p, "ingredient_b", "") == ing_b)
                  or (getattr(p, "ingredient_a", "") == ing_b and getattr(p, "ingredient_b", "") == ing_a)),
-                None
+                None,
             )
             molecules = getattr(pair_match, "shared_molecules", []) if pair_match else []
             shared_molecules_map[f"{ing_a} + {ing_b}"] = molecules[:5]
 
-    # Show molecule tags for context
+    # Show molecule tags with editorial styling
     for pair_label, molecules in shared_molecules_map.items():
         if molecules:
-            st.markdown(f"**{pair_label}** shared molecules:")
-            tags = "".join(molecule_tag_html(m) for m in molecules)
-            st.markdown(tags, unsafe_allow_html=True)
+            st.markdown(
+                f'<div style="margin-bottom:12px">'
+                f'<div style="font-family:system-ui;font-size:10px;font-weight:600;letter-spacing:0.1em;'
+                f'text-transform:uppercase;color:#7a5c42;margin-bottom:6px">{pair_label} shared molecules</div>'
+                f'<div>{"".join(molecule_tag_html(m) for m in molecules)}</div>'
+                f"</div>",
+                unsafe_allow_html=True,
+            )
 
     flavor_labels = {
         ing: getattr(
             next((p for p in pairs if getattr(p, "ingredient_a", "") == ing), None),
-            "label", ""
+            "label",
+            "",
         )
         for ing in selected
     }
 
-    st.markdown("---")
+    st.markdown('<hr style="border-color:#e8d5bc;margin:24px 0">', unsafe_allow_html=True)
 
     if st.button("Generate Recipe", type="primary"):
         prompt = build_recipe_prompt(selected, shared_molecules_map, flavor_labels)
 
-        st.markdown("### Your Molecular Pairing Recipe")
-        st.markdown('<p class="subtext">Generating with Claude claude-sonnet-4-6...</p>',
-                    unsafe_allow_html=True)
+        st.markdown(
+            '<h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;'
+            'color:#2d1b0e;margin-bottom:4px">Your Molecular Pairing Recipe</h2>'
+            '<p style="font-family:system-ui;font-size:12px;color:#7a5c42;'
+            'letter-spacing:0.04em;margin-bottom:20px">Generated by Claude claude-sonnet-4-6</p>',
+            unsafe_allow_html=True,
+        )
 
         try:
             client = anthropic.Anthropic(api_key=api_key)
-            # stream_recipe() is a generator yielding strings — correct pattern for st.write_stream
             full_recipe = st.write_stream(stream_recipe(client, prompt))
-
-            # Save to session state for copy/reference after streaming completes
             st.session_state["last_recipe"] = full_recipe
-            st.success("Recipe generated! Scroll up to read it.")
+            st.success("Recipe complete. Scroll up to read it.")
 
         except anthropic.AuthenticationError:
             st.error(
