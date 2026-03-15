@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-03-PLAN.md (active learning module, fine-tune loop with experience replay, 3 unit tests green 2 skipped)
-last_updated: "2026-03-15T19:01:06.319Z"
+stopped_at: "Completed 06-01-PLAN.md (Streamlit UI bootstrap: theme, cache layer, entry point, 12 xfail test stubs)"
+last_updated: "2026-03-15T19:45:14.891Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 25
-  completed_plans: 19
+  completed_plans: 20
   percent: 36
 ---
 
@@ -68,6 +68,7 @@ Progress: [████░░░░░░] 36%
 | Phase 05-scoring-and-active-learning P01 | 4 | 2 tasks | 5 files |
 | Phase 05-scoring-and-active-learning P02 | 15 | 2 tasks | 3 files |
 | Phase 05-scoring-and-active-learning P03 | 15 | 2 tasks | 2 files |
+| Phase 06-streamlit-ui P01 | 8 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -131,6 +132,8 @@ Recent decisions affecting current work:
 - [Phase 05-scoring-and-active-learning]: feedback.csv uses 'rating' column (not 'user_rating'): test scaffold (line 56) is authoritative; plan must_have text was superseded
 - [Phase 05-scoring-and-active-learning]: model.gat_model.FlavorGAT used in submit_rating (not model.train.HeteroGAT): confirmed from Phase 4 train_gat.py imports
 - [Phase 05-scoring-and-active-learning]: losses.py .long() cast: negative_sampling() can return int32 on some platforms; explicit cast prevents index dtype errors
+- [Phase 06-01]: app/__init__.py added (not in plan) — required for test stub imports from app.utils.* to resolve without PYTHONPATH hacks
+- [Phase 06-01]: invalidate_scored_pairs() calls load_scored_pairs_cached.clear() to avoid blanket st.cache_resource.clear() which would evict embeddings cache unnecessarily
 
 ### Pending Todos
 
@@ -145,6 +148,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:01:06.316Z
-Stopped at: Completed 05-03-PLAN.md (active learning module, fine-tune loop with experience replay, 3 unit tests green 2 skipped)
+Last session: 2026-03-15T19:45:14.887Z
+Stopped at: Completed 06-01-PLAN.md (Streamlit UI bootstrap: theme, cache layer, entry point, 12 xfail test stubs)
 Resume file: None
