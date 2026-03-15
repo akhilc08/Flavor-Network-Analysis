@@ -2,22 +2,28 @@ import streamlit as st
 
 THEME_CSS = """
 <style>
-  /* ── HIDE STREAMLIT CHROME (Streamlit 1.55 correct selectors) ── */
-  [data-testid="stAppHeader"]          { display: none !important; }
+  /* ── HIDE STREAMLIT CHROME ── */
+  [data-testid="stHeader"]             { background: transparent !important; border-bottom: none !important; box-shadow: none !important; }
+  [data-testid="stAppHeader"]          { background: transparent !important; border-bottom: none !important; }
   [data-testid="stAppToolbar"]         { display: none !important; }
-  [data-testid="stToolbar"]            { display: none !important; }
   [data-testid="stAppDeployButton"]    { display: none !important; }
   [data-testid="stMainMenu"]           { display: none !important; }
   [data-testid="stMainMenuButton"]     { display: none !important; }
   #MainMenu                            { display: none !important; }
   footer                               { display: none !important; }
 
+  /* ── HIDE SIDEBAR ENTIRELY ── */
+  [data-testid="stSidebar"]                { display: none !important; }
+  [data-testid="stSidebarCollapsedControl"] { display: none !important; }
+  [data-testid="stExpandSidebarButton"]     { display: none !important; }
+  section[data-testid="stSidebar"]          { display: none !important; }
+
   /* ── BACKGROUNDS ── */
   .stApp,
   [data-testid="stAppViewContainer"]   { background-color: #fdf6ec !important; }
 
-  /* ── MAIN CONTENT AREA — remove top gap left by hidden header ── */
-  [data-testid="stMain"]               { padding-top: 0 !important; }
+  /* ── MAIN CONTENT AREA — offset for 44px fixed nav ── */
+  [data-testid="stMain"]               { padding-top: 52px !important; }
   [data-testid="stMainBlockContainer"] {
     padding-top: 24px !important;
     padding-left: 48px !important;
@@ -26,40 +32,48 @@ THEME_CSS = """
     max-width: 1280px !important;
   }
 
-  /* ── SIDEBAR ── */
-  [data-testid="stSidebar"]            { background-color: #f0e6d3 !important; border-right: 1px solid #e8d5bc !important; }
-  [data-testid="stSidebarHeader"]      { background-color: #f0e6d3 !important; border-bottom: 1px solid #e8d5bc !important; padding: 20px 24px 16px !important; }
-  [data-testid="stSidebarContent"]     { background-color: #f0e6d3 !important; }
-  [data-testid="stSidebarUserContent"] { padding: 16px 0 !important; }
-
-  /* Sidebar nav links */
-  [data-testid="stSidebarNavItems"]    { padding: 0 !important; }
-  [data-testid="stSidebarNavLink"]     {
-    padding: 10px 24px !important;
-    border-radius: 0 !important;
-    font-family: system-ui, sans-serif !important;
-    font-size: 14px !important;
+  /* ── TOP NAV ── */
+  #fn-topnav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 44px !important;
+    background: #fdf6ec !important;
+    border-bottom: 1px solid #e8d5bc !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: space-between !important;
+    padding: 0 48px !important;
+    z-index: 99999 !important;
+  }
+  #fn-topnav a.fn-logo {
+    font-family: Georgia, serif !important;
+    font-size: 16px !important;
     font-weight: 400 !important;
     color: #2d1b0e !important;
-    background: transparent !important;
-    border-left: 3px solid transparent !important;
-    transition: background 0.15s, color 0.15s !important;
+    letter-spacing: -0.02em !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
   }
-  [data-testid="stSidebarNavLink"]:hover {
-    background: rgba(196,98,42,0.07) !important;
-    color: #c4622a !important;
-  }
-  [data-testid="stSidebarNavLink"][aria-current="page"] {
-    background: rgba(196,98,42,0.1) !important;
-    color: #c4622a !important;
+  #fn-topnav a.fn-logo:hover { color: #c4622a !important; }
+  #fn-topnav a.fn-nav-link {
+    font-family: system-ui, sans-serif !important;
+    font-size: 11px !important;
     font-weight: 600 !important;
-    border-left: 3px solid #c4622a !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    color: #7a5c42 !important;
+    text-decoration: none !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-bottom: 2px solid transparent !important;
+    transition: color 0.15s, border-color 0.15s !important;
   }
-  /* Sidebar nav link icons and text */
-  [data-testid="stSidebarNavLinkContainer"] span { color: inherit !important; }
-  [data-testid="stSidebar"] p,
-  [data-testid="stSidebar"] span,
-  [data-testid="stSidebar"] div { color: #2d1b0e !important; }
+  #fn-topnav a.fn-nav-link:hover  { color: #c4622a !important; }
+  #fn-topnav a.fn-nav-link.active { color: #c4622a !important; border-bottom-color: #c4622a !important; }
 
   /* ── TYPOGRAPHY ── */
   h1, h2, h3, h4 {
@@ -79,9 +93,9 @@ THEME_CSS = """
   /* ── SELECTION ── */
   ::selection { background: rgba(196,98,42,0.2); }
 
-  /* ── STRIP ALL BLUE ── */
-  a { color: #c4622a !important; }
-  a:hover { color: #a84e22 !important; }
+  /* ── LINKS (exclude nav — nav specificity handles itself) ── */
+  a:not(.fn-logo):not(.fn-nav-link) { color: #c4622a !important; }
+  a:not(.fn-logo):not(.fn-nav-link):hover { color: #a84e22 !important; }
   [data-baseweb="tab-highlight"]              { background-color: #c4622a !important; }
   [data-testid="stBaseButton-primary"]        { background-color: #c4622a !important; border-color: #c4622a !important; }
   [data-testid="stBaseButton-primary"]:hover  { background-color: #a84e22 !important; }
@@ -177,27 +191,36 @@ THEME_CSS = """
 </style>
 """
 
-
-_SIDEBAR_HEADER = """
-<div style="padding:4px 0 20px">
-  <div style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:#2d1b0e;letter-spacing:-0.01em;line-height:1.2">
-    Flavor Pairing<br><span style="color:#c4622a">Network</span>
-  </div>
-  <div style="font-family:system-ui;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;margin-top:4px">
-    Molecular gastronomy
-  </div>
+# Active page is highlighted via JS: window.location.pathname checked against data-page attribute.
+# Home page (/) has no matching data-page value, so all links stay inactive — correct behavior.
+_TOP_NAV = """
+<div id="fn-topnav">
+  <a href="/" target="_self" class="fn-logo">FlavorNet</a>
+  <nav style="display:flex;align-items:stretch;gap:0;">
+    <a href="/1_Search" target="_self" class="fn-nav-link" data-page="1_Search">Search</a>
+    <a href="/2_Rate"   target="_self" class="fn-nav-link" data-page="2_Rate">Rate</a>
+    <a href="/3_Graph"  target="_self" class="fn-nav-link" data-page="3_Graph">Graph</a>
+    <a href="/4_Recipe" target="_self" class="fn-nav-link" data-page="4_Recipe">Recipe</a>
+  </nav>
 </div>
-<div style="height:1px;background:#e8d5bc;margin:0 -16px 20px"></div>
-<div style="font-family:system-ui;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#7a5c42;font-weight:600;margin-bottom:4px">
-  Navigation
-</div>
+<script>
+(function() {
+  var path = window.location.pathname;
+  document.querySelectorAll('#fn-topnav .fn-nav-link').forEach(function(link) {
+    var page = link.getAttribute('data-page');
+    if (path.indexOf(page) !== -1) {
+      link.classList.add('active');
+    }
+  });
+})();
+</script>
 """
 
 
 def inject_theme() -> None:
-    """Inject Editorial CSS theme + sidebar header. Call as first action in every page."""
+    """Inject Editorial CSS theme + sticky top nav. Call as first action in every page."""
     st.markdown(THEME_CSS, unsafe_allow_html=True)
-    st.sidebar.markdown(_SIDEBAR_HEADER, unsafe_allow_html=True)
+    st.markdown(_TOP_NAV, unsafe_allow_html=True)
 
 
 def pill_html(label: str) -> str:
