@@ -1,10 +1,8 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 THEME_CSS = """
 <style>
   /* ── HIDE STREAMLIT CHROME ── */
-  [data-testid="stHeader"]             { background: transparent !important; border-bottom: none !important; box-shadow: none !important; }
   [data-testid="stAppHeader"]          { background: transparent !important; border-bottom: none !important; }
   [data-testid="stAppToolbar"]         { display: none !important; }
   [data-testid="stAppDeployButton"]    { display: none !important; }
@@ -12,18 +10,110 @@ THEME_CSS = """
   [data-testid="stMainMenuButton"]     { display: none !important; }
   #MainMenu                            { display: none !important; }
   footer                               { display: none !important; }
-
-  /* ── HIDE SIDEBAR ENTIRELY ── */
-  [data-testid="stSidebar"]                { display: none !important; }
   [data-testid="stSidebarCollapsedControl"] { display: none !important; }
   [data-testid="stExpandSidebarButton"]     { display: none !important; }
-  section[data-testid="stSidebar"]          { display: none !important; }
+
+  /* ── TRANSFORM SIDEBAR INTO HORIZONTAL TOP NAV ── */
+  [data-testid="stSidebar"] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 44px !important;
+    background: #fdf6ec !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e8d5bc !important;
+    z-index: 99999 !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+  [data-testid="stSidebarHeader"]      { display: none !important; }
+  [data-testid="stSidebarContent"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    height: 44px !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+  /* Logo area (stSidebarUserContent holds our st.sidebar.markdown) */
+  [data-testid="stSidebarUserContent"] {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 24px 0 48px !important;
+    flex-shrink: 0 !important;
+    height: 44px !important;
+    overflow: visible !important;
+    min-width: 0 !important;
+  }
+  [data-testid="stSidebarUserContent"] p {
+    margin: 0 !important;
+    font-family: Georgia, serif !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    color: #2d1b0e !important;
+    letter-spacing: -0.02em !important;
+    white-space: nowrap !important;
+  }
+  /* Nav items (stSidebarNav) pushed to the right */
+  [data-testid="stSidebarNav"] {
+    margin-left: auto !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    height: 44px !important;
+    padding: 0 24px 0 0 !important;
+    overflow: hidden !important;
+  }
+  [data-testid="stSidebarNavItems"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 44px !important;
+  }
+  [data-testid="stSidebarNavLink"] {
+    padding: 0 16px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-left: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    font-family: system-ui, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    color: #7a5c42 !important;
+    background: transparent !important;
+    transition: color 0.15s, border-color 0.15s !important;
+  }
+  [data-testid="stSidebarNavLink"]:hover {
+    color: #c4622a !important;
+    background: transparent !important;
+  }
+  [data-testid="stSidebarNavLink"][aria-current="page"] {
+    color: #c4622a !important;
+    border-left: none !important;
+    border-bottom: 2px solid #c4622a !important;
+    background: transparent !important;
+    font-weight: 600 !important;
+  }
+  /* Nav link icons and text */
+  [data-testid="stSidebarNavLinkContainer"] span { color: inherit !important; }
+  /* Hide the home "app" link — logo handles home navigation */
+  [data-testid="stSidebarNavLink"][href="/"] { display: none !important; }
 
   /* ── BACKGROUNDS ── */
   .stApp,
   [data-testid="stAppViewContainer"]   { background-color: #fdf6ec !important; }
 
-  /* ── MAIN CONTENT AREA — offset for 44px fixed nav ── */
+  /* ── MAIN CONTENT — clear the 44px top nav ── */
   [data-testid="stMain"]               { padding-top: 52px !important; }
   [data-testid="stMainBlockContainer"] {
     padding-top: 24px !important;
@@ -32,49 +122,6 @@ THEME_CSS = """
     padding-bottom: 48px !important;
     max-width: 1280px !important;
   }
-
-  /* ── TOP NAV ── */
-  #fn-topnav {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: 44px !important;
-    background: #fdf6ec !important;
-    border-bottom: 1px solid #e8d5bc !important;
-    display: flex !important;
-    align-items: stretch !important;
-    justify-content: space-between !important;
-    padding: 0 48px !important;
-    z-index: 99999 !important;
-  }
-  #fn-topnav a.fn-logo {
-    font-family: Georgia, serif !important;
-    font-size: 16px !important;
-    font-weight: 400 !important;
-    color: #2d1b0e !important;
-    letter-spacing: -0.02em !important;
-    text-decoration: none !important;
-    display: flex !important;
-    align-items: center !important;
-  }
-  #fn-topnav a.fn-logo:hover { color: #c4622a !important; }
-  #fn-topnav a.fn-nav-link {
-    font-family: system-ui, sans-serif !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.1em !important;
-    text-transform: uppercase !important;
-    color: #7a5c42 !important;
-    text-decoration: none !important;
-    padding: 0 16px !important;
-    display: flex !important;
-    align-items: center !important;
-    border-bottom: 2px solid transparent !important;
-    transition: color 0.15s, border-color 0.15s !important;
-  }
-  #fn-topnav a.fn-nav-link:hover  { color: #c4622a !important; }
-  #fn-topnav a.fn-nav-link.active { color: #c4622a !important; border-bottom-color: #c4622a !important; }
 
   /* ── TYPOGRAPHY ── */
   h1, h2, h3, h4 {
@@ -94,9 +141,9 @@ THEME_CSS = """
   /* ── SELECTION ── */
   ::selection { background: rgba(196,98,42,0.2); }
 
-  /* ── LINKS (exclude nav — nav specificity handles itself) ── */
-  a:not(.fn-logo):not(.fn-nav-link) { color: #c4622a !important; }
-  a:not(.fn-logo):not(.fn-nav-link):hover { color: #a84e22 !important; }
+  /* ── LINKS ── */
+  a { color: #c4622a !important; }
+  a:hover { color: #a84e22 !important; }
   [data-baseweb="tab-highlight"]              { background-color: #c4622a !important; }
   [data-testid="stBaseButton-primary"]        { background-color: #c4622a !important; border-color: #c4622a !important; }
   [data-testid="stBaseButton-primary"]:hover  { background-color: #a84e22 !important; }
@@ -192,65 +239,13 @@ THEME_CSS = """
 </style>
 """
 
-# Injected via components.html (real iframe) so scripts actually execute.
-# Uses window.parent to manipulate the Streamlit page DOM directly.
-_NAV_INJECTOR = """
-<script>
-(function() {
-  try {
-    var doc = window.parent.document;
-    var loc = window.parent.location;
-
-    // Remove stale nav on re-render
-    var existing = doc.getElementById('fn-topnav');
-    if (existing) { existing.remove(); }
-
-    var nav = doc.createElement('div');
-    nav.id = 'fn-topnav';
-
-    // Logo
-    var logo = doc.createElement('a');
-    logo.className = 'fn-logo';
-    logo.textContent = 'FlavorNet';
-    logo.style.cursor = 'pointer';
-    logo.addEventListener('click', function() { loc.href = '/'; });
-    nav.appendChild(logo);
-
-    // Nav links
-    var navEl = doc.createElement('nav');
-    navEl.style.cssText = 'display:flex;align-items:stretch;gap:0;';
-
-    var path = loc.pathname;
-    var pages = [
-      ['/1_Search', 'Search', '1_Search'],
-      ['/2_Rate',   'Rate',   '2_Rate'],
-      ['/3_Graph',  'Graph',  '3_Graph'],
-      ['/4_Recipe', 'Recipe', '4_Recipe']
-    ];
-
-    pages.forEach(function(p) {
-      var href = p[0], label = p[1], page = p[2];
-      var a = doc.createElement('a');
-      a.className = 'fn-nav-link' + (path.indexOf(page) !== -1 ? ' active' : '');
-      a.setAttribute('data-page', page);
-      a.textContent = label;
-      a.style.cursor = 'pointer';
-      a.addEventListener('click', function() { loc.href = href; });
-      navEl.appendChild(a);
-    });
-
-    nav.appendChild(navEl);
-    doc.body.appendChild(nav);
-  } catch(e) {}
-})();
-</script>
-"""
+_LOGO_HTML = "FlavorNet"
 
 
 def inject_theme() -> None:
-    """Inject Editorial CSS theme + sticky top nav. Call as first action in every page."""
+    """Inject Editorial CSS + push FlavorNet logo into sidebar (rendered as top nav)."""
     st.markdown(THEME_CSS, unsafe_allow_html=True)
-    components.html(_NAV_INJECTOR, height=0)
+    st.sidebar.markdown(_LOGO_HTML)
 
 
 def pill_html(label: str) -> str:
