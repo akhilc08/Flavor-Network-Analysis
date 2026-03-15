@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Feature Engineering** - PubChem SMILES fetch, RDKit descriptors, and multimodal ingredient feature assembly; produces data/processed/ parquets (completed 2026-03-12)
 - [x] **Phase 3: Graph Construction** - Heterogeneous HeteroData graph with validation gate and leakage-free link prediction split; produces graph/hetero_data.pt (completed 2026-03-12)
 - [x] **Phase 4: Model Training** - 3-layer GAT with dual supervision and InfoNCE loss trained to AUC >= 0.70; produces ingredient_embeddings.pkl (completed 2026-03-12)
-- [ ] **Phase 5: Scoring and Active Learning** - Surprise score formula over all pairs plus fine-tuning loop with experience replay; produces scoring/scored_pairs.pkl and working active learning module
+- [x] **Phase 5: Scoring and Active Learning** - Surprise score formula over all pairs plus fine-tuning loop with experience replay; produces scoring/scored_pairs.pkl and working active learning module (completed 2026-03-15)
 - [ ] **Phase 6: Streamlit UI** - Complete 4-page demo: ingredient search, active learning rating, flavor graph explorer, Claude recipe generation
 
 ## Phase Details
@@ -141,5 +141,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Feature Engineering | 3/4 | Complete    | 2026-03-12 |
 | 3. Graph Construction | 4/4 | Complete   | 2026-03-12 |
 | 4. Model Training | 4/4 | Complete   | 2026-03-12 |
-| 5. Scoring and Active Learning | 2/3 | In Progress|  |
+| 5. Scoring and Active Learning | 3/3 | Complete   | 2026-03-15 |
 | 6. Streamlit UI | 0/6 | Planned | - |

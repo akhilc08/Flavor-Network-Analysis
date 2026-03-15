@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-02-PLAN.md (vectorized scoring pipeline, 436,645 pairs, all 5 tests green)
-last_updated: "2026-03-15T18:16:17.514Z"
+stopped_at: Completed 05-03-PLAN.md (active learning module, fine-tune loop with experience replay, 3 unit tests green 2 skipped)
+last_updated: "2026-03-15T19:01:06.319Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 25
-  completed_plans: 18
+  completed_plans: 19
   percent: 36
 ---
 
@@ -67,6 +67,7 @@ Progress: [████░░░░░░] 36%
 | Phase 04-model-training P04 | 15 | 2 tasks | 2 files |
 | Phase 05-scoring-and-active-learning P01 | 4 | 2 tasks | 5 files |
 | Phase 05-scoring-and-active-learning P02 | 15 | 2 tasks | 3 files |
+| Phase 05-scoring-and-active-learning P03 | 15 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,9 @@ Recent decisions affecting current work:
 - [Phase 05-scoring-and-active-learning]: check_phase4_artifacts() warns (not raises) when graph/val_edges.pt or training_metadata.json missing — graceful degradation
 - [Phase 05-scoring-and-active-learning]: Embeddings and graph use integer ingredient IDs as keys — compute_all_pairs accepts any hashable key; ingredient_a/ingredient_b columns contain integer IDs
 - [Phase 05-scoring-and-active-learning]: co_occurrence and molecule_sets reconstructed from hetero_data edge_index by inverting idx maps; compute_scores.py uses integer IDs throughout for consistency with embeddings
+- [Phase 05-scoring-and-active-learning]: feedback.csv uses 'rating' column (not 'user_rating'): test scaffold (line 56) is authoritative; plan must_have text was superseded
+- [Phase 05-scoring-and-active-learning]: model.gat_model.FlavorGAT used in submit_rating (not model.train.HeteroGAT): confirmed from Phase 4 train_gat.py imports
+- [Phase 05-scoring-and-active-learning]: losses.py .long() cast: negative_sampling() can return int32 on some platforms; explicit cast prevents index dtype errors
 
 ### Pending Todos
 
@@ -141,6 +145,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:16:17.511Z
-Stopped at: Completed 05-02-PLAN.md (vectorized scoring pipeline, 436,645 pairs, all 5 tests green)
+Last session: 2026-03-15T19:01:06.316Z
+Stopped at: Completed 05-03-PLAN.md (active learning module, fine-tune loop with experience replay, 3 unit tests green 2 skipped)
 Resume file: None

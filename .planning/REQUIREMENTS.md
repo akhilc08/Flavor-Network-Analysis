@@ -117,8 +117,8 @@
 | FEAT-01 to FEAT-09 | Phase 2: Feature Engineering | Pending |
 | GRAPH-01 to GRAPH-09 | Phase 3: Graph Construction | Complete |
 | MODEL-01 to MODEL-09 | Phase 4: Model Training | Pending |
-| SCORE-01 to SCORE-04 | Phase 5: Scoring and Active Learning | Pending |
-| LEARN-01 to LEARN-06 | Phase 5: Scoring and Active Learning | Pending |
+| SCORE-01 to SCORE-04 | Phase 5: Scoring and Active Learning | Complete |
+| LEARN-01 to LEARN-06 | Phase 5: Scoring and Active Learning | Complete |
 | UI-01 to UI-07 | Phase 6: Streamlit UI | Pending |
 
 **Coverage:**
