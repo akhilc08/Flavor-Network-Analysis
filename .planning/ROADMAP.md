@@ -142,4 +142,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Graph Construction | 4/4 | Complete   | 2026-03-12 |
 | 4. Model Training | 4/4 | Complete   | 2026-03-12 |
 | 5. Scoring and Active Learning | 3/3 | Complete   | 2026-03-15 |
-| 6. Streamlit UI | 1/6 | In Progress|  |
+| 6. Streamlit UI | 2/6 | In Progress|  |
