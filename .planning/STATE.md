@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md (scoring+active_learning Wave 0 scaffold, 10 tests collected)
-last_updated: "2026-03-15T18:14:39.504Z"
+stopped_at: Completed 05-02-PLAN.md (vectorized scoring pipeline, 436,645 pairs, all 5 tests green)
+last_updated: "2026-03-15T18:16:17.514Z"
 last_activity: 2026-03-11 — Completed Plan 03-01 (Phase 3 graph test stubs, 9 skipped pytest stubs)
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 25
-  completed_plans: 17
+  completed_plans: 18
   percent: 36
 ---
 
@@ -66,6 +66,7 @@ Progress: [████░░░░░░] 36%
 | Phase 04-model-training P01 | 6 | 2 tasks | 2 files |
 | Phase 04-model-training P04 | 15 | 2 tasks | 2 files |
 | Phase 05-scoring-and-active-learning P01 | 4 | 2 tasks | 5 files |
+| Phase 05-scoring-and-active-learning P02 | 15 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,8 @@ Recent decisions affecting current work:
 - [Phase 05-scoring-and-active-learning]: scoring/score.py implemented with full vectorized logic in Wave 0 (linter auto-completion); scoring tests pass early
 - [Phase 05-scoring-and-active-learning]: METADATA_PATH, AUC_GATE, FEEDBACK_PATH as monkeypatchable module-level constants in model/active_learning.py
 - [Phase 05-scoring-and-active-learning]: check_phase4_artifacts() warns (not raises) when graph/val_edges.pt or training_metadata.json missing — graceful degradation
+- [Phase 05-scoring-and-active-learning]: Embeddings and graph use integer ingredient IDs as keys — compute_all_pairs accepts any hashable key; ingredient_a/ingredient_b columns contain integer IDs
+- [Phase 05-scoring-and-active-learning]: co_occurrence and molecule_sets reconstructed from hetero_data edge_index by inverting idx maps; compute_scores.py uses integer IDs throughout for consistency with embeddings
 
 ### Pending Todos
 
@@ -138,6 +141,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:14:39.500Z
-Stopped at: Completed 05-01-PLAN.md (scoring+active_learning Wave 0 scaffold, 10 tests collected)
+Last session: 2026-03-15T18:16:17.511Z
+Stopped at: Completed 05-02-PLAN.md (vectorized scoring pipeline, 436,645 pairs, all 5 tests green)
 Resume file: None
