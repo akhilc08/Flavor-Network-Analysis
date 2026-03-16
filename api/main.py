@@ -40,3 +40,6 @@ fastapi_app.include_router(rate_router)
 
 from api.routes.graph import router as graph_router
 fastapi_app.include_router(graph_router)
+
+from api.routes.recipe import router as recipe_router
+fastapi_app.include_router(recipe_router)
