@@ -1,0 +1,10 @@
+pytest
+httpx
+fastapi[standard]
+pydantic
+anthropic
+pandas
+pyarrow
+torch
+scikit-learn
+numpy
