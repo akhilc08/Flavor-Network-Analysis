@@ -6,7 +6,7 @@ import { getUncertainPairs, submitRatings } from '@/lib/api'
 import type { UncertainPair, RateResponse } from '@/lib/types'
 
 function pairKey(pair: UncertainPair): string {
-  return `${pair.ingredient_a}__${pair.ingredient_b}`
+  return pair.pair_id
 }
 
 export default function RatePage() {

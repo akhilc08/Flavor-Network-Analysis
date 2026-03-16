@@ -29,7 +29,7 @@ export default function StarRating({ value, onChange }: StarRatingProps) {
             key={star}
             type="button"
             role="radio"
-            aria-label={`${star} star${star !== 1 ? 's' : ''}`}
+            aria-label={`${star} stars`}
             aria-checked={value === star}
             onClick={() => onChange(star)}
             onMouseEnter={() => setHovered(star)}

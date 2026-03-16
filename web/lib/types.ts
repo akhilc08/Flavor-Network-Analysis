@@ -14,6 +14,7 @@ export interface SearchResponse {
 }
 
 export interface UncertainPair {
+  pair_id: string
   ingredient_a: string
   ingredient_b: string
   score: number
