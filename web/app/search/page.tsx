@@ -21,8 +21,9 @@ export default function SearchPage() {
     try {
       const data = await searchIngredient(trimmed)
       setResult(data)
-    } catch (e: any) {
-      setError(e.status === 404
+    } catch (e) {
+      const err = e as { status?: number }
+      setError(err.status === 404
         ? `Ingredient "${trimmed}" not found. Try another name.`
         : 'Something went wrong. Please try again.'
       )
