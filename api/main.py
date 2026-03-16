@@ -32,4 +32,5 @@ def health():
     return {"status": "ok", "auc": auc}
 
 
-# Routes registered in subsequent tasks
+from api.routes.search import router as search_router
+fastapi_app.include_router(search_router)
