@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { getGraph } from '@/lib/api'
 import type { GraphResponse } from '@/lib/types'
@@ -15,7 +15,7 @@ export default function GraphPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function fetchGraph() {
+  const fetchGraph = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -26,13 +26,12 @@ export default function GraphPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [center, maxNodes, minScore])
 
-  // Fetch on initial mount
+  // Fetch on initial mount and whenever fetchGraph identity changes
   useEffect(() => {
     fetchGraph()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [fetchGraph])
 
   return (
     <>
@@ -111,7 +110,12 @@ export default function GraphPage() {
       {!loading && data && (
         <>
           <div className="rounded-xl overflow-hidden border border-muted">
-            <FlavorGraph data={data} />
+            <FlavorGraph
+              data={data}
+              onNodeClick={(nodeId) => {
+                setCenter(nodeId)
+              }}
+            />
           </div>
           <p className="font-sans text-[13px] text-warm-mid mt-3">
             {data.nodes.length} nodes, {data.edges.length} edges

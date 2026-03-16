@@ -2,15 +2,29 @@
 
 import { useEffect } from 'react'
 import Graph from 'graphology'
-import { SigmaContainer, useLoadGraph } from '@react-sigma/core'
+import { SigmaContainer, useLoadGraph, useRegisterEvents } from '@react-sigma/core'
 import '@react-sigma/core/lib/style.css'
 import type { GraphResponse } from '@/lib/types'
+
+function NodeClickHandler({ onNodeClick }: { onNodeClick?: (nodeId: string) => void }) {
+  const registerEvents = useRegisterEvents()
+
+  useEffect(() => {
+    if (!onNodeClick) return
+    registerEvents({
+      clickNode: ({ node }) => onNodeClick(node),
+    })
+  }, [registerEvents, onNodeClick])
+
+  return null
+}
 
 function GraphLoader({ data }: { data: GraphResponse }) {
   const loadGraph = useLoadGraph()
 
   useEffect(() => {
     const graph = new Graph()
+    graph.clear()
     data.nodes.forEach(node => {
       graph.addNode(node.id, {
         label: node.label,
@@ -28,19 +42,30 @@ function GraphLoader({ data }: { data: GraphResponse }) {
       })
     })
     loadGraph(graph)
+
+    return () => {
+      graph.clear()
+    }
   }, [data, loadGraph])
 
   return null
 }
 
-export default function FlavorGraph({ data }: { data: GraphResponse }) {
+export default function FlavorGraph({
+  data,
+  onNodeClick,
+}: {
+  data: GraphResponse
+  onNodeClick?: (nodeId: string) => void
+}) {
   return (
     <SigmaContainer
       graph={Graph}
       style={{ width: '100%', height: '500px' }}
-      settings={{ renderEdgeLabels: true, defaultEdgeType: 'arrow' }}
+      settings={{ renderEdgeLabels: true, defaultEdgeType: 'line' }}
     >
       <GraphLoader data={data} />
+      <NodeClickHandler onNodeClick={onNodeClick} />
     </SigmaContainer>
   )
 }
