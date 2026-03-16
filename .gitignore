@@ -28,6 +28,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Allow web/lib (Next.js TypeScript lib directory, not Python)
+!web/lib/
 parts/
 sdist/
 var/
