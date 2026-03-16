@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #fdf6ec;
+  --color-card: #fff8f0;
+  --color-dark: #2d1b0e;
+  --color-accent: #c4622a;
+  --color-accent-light: #e8845a;
+  --color-muted: #e8d5bc;
+  --color-green: #4a7c4e;
+  --color-green-light: #6aab6e;
+  --color-blue: #8b9dc3;
+  --color-gold: #b8860b;
+  --color-warm-mid: #7a5c42;
+  --color-warm-light: #c4a882;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background-color: var(--color-bg); scroll-behavior: smooth; }
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-dark);
+  font-family: Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: rgba(196, 98, 42, 0.2); }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-muted); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+
+/* Score bar animation */
+.score-bar-fill {
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Prose styles for recipe markdown */
+.recipe-prose h1, .recipe-prose h2, .recipe-prose h3 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  color: var(--color-dark);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.25;
+}
+.recipe-prose h1 { font-size: 1.5rem; }
+.recipe-prose h2 { font-size: 1.25rem; border-top: 1px solid var(--color-muted); padding-top: 1.25em; }
+.recipe-prose p { line-height: 1.7; margin-bottom: 0.875em; color: var(--color-dark); }
+.recipe-prose ul, .recipe-prose ol { padding-left: 1.5em; margin-bottom: 1em; }
+.recipe-prose li { margin-bottom: 0.375em; line-height: 1.65; }
+.recipe-prose strong { font-weight: 600; color: var(--color-dark); }
+.recipe-prose em { font-style: italic; color: var(--color-warm-mid); }
