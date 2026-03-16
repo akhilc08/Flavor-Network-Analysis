@@ -131,7 +131,7 @@ Response:
 ```json
 { "auc_before": 0.847, "auc_after": 0.861, "delta": 0.014 }
 ```
-The route loops over the ratings list, calling `active_learning.submit_rating(ingredient_a, ingredient_b, rating)` for each pair (appends to `feedback.csv`), then calls `active_learning.fine_tune_with_replay()` for 10 epochs. Returns `auc_before` (read from `training_metadata.json` before fine-tune) and `auc_after` (read after) once complete (~30s).
+The route reads `auc_before` from `training_metadata.json`, then loops over the ratings list calling `active_learning.submit_rating(ingredient_a, ingredient_b, rating)` for each pair. `submit_rating` is the correct public entry point — it handles appending to `feedback.csv`, loading the model, running `fine_tune_with_replay` internally, re-exporting embeddings, and re-running scoring. Do not call `fine_tune_with_replay` directly (it is an internal helper requiring pre-loaded state). After the loop completes, the route reads `auc_after` from the updated `training_metadata.json` and returns both values.
 
 **`POST /recipe` — Request body**
 ```json
@@ -229,6 +229,7 @@ flavornet-data/
 ├── training_metadata.json         # Updated after each fine-tune
 ├── feedback.csv                   # Appended after each rating submission
 ├── graph/hetero_data.pt           # Required by active_learning.py for fine-tuning
+├── graph/val_edges.pt             # Fallback AUC source; absent = AUC silently returns 0.5
 ├── model/checkpoints/best_model.pt # Required by active_learning.py for fine-tuning
 └── model/replay_buffer.pkl        # Required by active_learning.py for experience replay
 ```
