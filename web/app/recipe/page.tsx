@@ -72,7 +72,7 @@ export default function RecipePage() {
   const canGenerate = selected.length >= 2 && !generating
 
   return (
-    <main className="min-h-screen bg-bg py-12 px-4">
+    <div className="min-h-screen bg-bg py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <h1 className="font-serif text-3xl text-dark mb-2">Recipe Generator</h1>
@@ -91,6 +91,7 @@ export default function RecipePage() {
                 <button
                   key={ingredient}
                   onClick={() => toggle(ingredient)}
+                  aria-pressed={isSelected}
                   className={[
                     'px-4 py-1.5 rounded-full text-sm font-sans capitalize transition-colors',
                     isSelected
@@ -117,7 +118,7 @@ export default function RecipePage() {
           ].join(' ')}
         >
           {generating && (
-            <span className="inline-block w-4 h-4 border-2 border-bg border-t-transparent rounded-full animate-spin" />
+            <span aria-hidden="true" className="inline-block w-4 h-4 border-2 border-bg border-t-transparent rounded-full animate-spin" />
           )}
           Generate Recipe
         </button>
@@ -161,6 +162,6 @@ export default function RecipePage() {
           50% { opacity: 0; }
         }
       `}</style>
-    </main>
+    </div>
   )
 }
