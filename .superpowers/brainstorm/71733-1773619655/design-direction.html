@@ -1,0 +1,90 @@
+<h2>Which design direction feels right?</h2>
+<p class="subtitle">Choosing the overall visual style for the Next.js rebuild</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="editorial" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f5ede0;padding:16px;font-family:Georgia,serif;">
+      <div style="background:#2d1b0e;color:#e8d5bc;padding:8px 16px;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">FlavorNet · Search · Rate · Graph · Recipe</div>
+      <div style="font-size:22px;font-weight:700;color:#2d1b0e;margin-bottom:4px;">Strawberry</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <span style="background:#c4622a;color:#fff;padding:2px 10px;font-size:11px;border-radius:2px;">Surprising</span>
+        <span style="background:transparent;border:1px solid #c4622a;color:#c4622a;padding:2px 10px;font-size:11px;border-radius:2px;">Unexpected</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#fff;border:1px solid #e8d5bc;padding:10px;border-radius:2px;">
+          <div style="font-size:13px;font-weight:600;color:#2d1b0e;">Miso</div>
+          <div style="font-size:11px;color:#c4622a;">Score: 0.87</div>
+          <div style="height:3px;background:#e8d5bc;margin:4px 0;"><div style="width:87%;height:100%;background:#c4622a;"></div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #e8d5bc;padding:10px;border-radius:2px;">
+          <div style="font-size:13px;font-weight:600;color:#2d1b0e;">Blue Cheese</div>
+          <div style="font-size:11px;color:#c4622a;">Score: 0.81</div>
+          <div style="height:3px;background:#e8d5bc;margin:4px 0;"><div style="width:81%;height:100%;background:#c4622a;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Keep Editorial (Port Current Look)</h3>
+      <p>Carry over the earthy terracotta palette, serif typography, and editorial card layout. Clean port — same feel, better tech.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="modern-dark" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f0f;padding:16px;font-family:'Inter',sans-serif;">
+      <div style="background:#1a1a1a;color:#888;padding:8px 16px;font-size:11px;letter-spacing:1px;border-bottom:1px solid #222;margin-bottom:12px;display:flex;gap:16px;">
+        <span style="color:#fff;">FlavorNet</span><span>Search</span><span>Rate</span><span>Graph</span><span>Recipe</span>
+      </div>
+      <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;">Strawberry</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <span style="background:linear-gradient(135deg,#ff6b35,#f7c59f);color:#0f0f0f;padding:2px 10px;font-size:11px;border-radius:20px;font-weight:600;">Surprising</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;padding:10px;border-radius:8px;">
+          <div style="font-size:13px;font-weight:600;color:#fff;">Miso</div>
+          <div style="font-size:11px;color:#ff6b35;">0.87 ·· Surprising</div>
+          <div style="height:2px;background:#2a2a2a;margin:6px 0;border-radius:1px;"><div style="width:87%;height:100%;background:linear-gradient(90deg,#ff6b35,#f7c59f);border-radius:1px;"></div></div>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;padding:10px;border-radius:8px;">
+          <div style="font-size:13px;font-weight:600;color:#fff;">Blue Cheese</div>
+          <div style="font-size:11px;color:#ff6b35;">0.81 ·· Surprising</div>
+          <div style="height:2px;background:#2a2a2a;margin:6px 0;border-radius:1px;"><div style="width:81%;height:100%;background:linear-gradient(90deg,#ff6b35,#f7c59f);border-radius:1px;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Modern Dark</h3>
+      <p>Dark background, vibrant orange gradients, rounded cards, sans-serif. More of a data tool / SaaS product feel. High contrast, good for the graph page.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="minimal-clean" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafa;padding:16px;font-family:'Inter',sans-serif;">
+      <div style="background:#fff;border-bottom:1px solid #eee;padding:8px 16px;font-size:12px;color:#999;margin-bottom:12px;display:flex;gap:20px;">
+        <span style="color:#000;font-weight:600;">FlavorNet</span><span>Search</span><span>Rate</span><span>Graph</span><span>Recipe</span>
+      </div>
+      <div style="font-size:22px;font-weight:700;color:#111;margin-bottom:4px;">Strawberry</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <span style="background:#f0fdf4;color:#16a34a;padding:2px 10px;font-size:11px;border-radius:4px;border:1px solid #bbf7d0;">Surprising</span>
+        <span style="background:#fff7ed;color:#ea580c;padding:2px 10px;font-size:11px;border-radius:4px;border:1px solid #fed7aa;">Unexpected</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#fff;border:1px solid #eee;padding:10px;border-radius:6px;">
+          <div style="font-size:13px;font-weight:600;color:#111;">Miso</div>
+          <div style="font-size:11px;color:#6b7280;">Score: 0.87</div>
+          <div style="height:4px;background:#f3f4f6;margin:4px 0;border-radius:2px;"><div style="width:87%;height:100%;background:#111;border-radius:2px;"></div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #eee;padding:10px;border-radius:6px;">
+          <div style="font-size:13px;font-weight:600;color:#111;">Blue Cheese</div>
+          <div style="font-size:11px;color:#6b7280;">Score: 0.81</div>
+          <div style="height:4px;background:#f3f4f6;margin:4px 0;border-radius:2px;"><div style="width:81%;height:100%;background:#111;border-radius:2px;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Minimal Clean</h3>
+      <p>White background, neutral tones, clean sans-serif. Looks like a modern web app (Notion/Linear-ish). Easiest to extend and keep consistent.</p>
+    </div>
+  </div>
+
+</div>

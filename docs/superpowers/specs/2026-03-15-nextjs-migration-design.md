@@ -116,7 +116,7 @@ All endpoints served from FastAPI on a Modal ASGI web endpoint. Base URL stored 
   ]
 }
 ```
-`auc` sourced by reading `training_metadata.json` directly (`json.load`) — the same way `active_learning.is_active_learning_enabled()` reads it internally. Returns `403` if the file is absent OR if AUC < 0.70 (both conditions mean active learning is not enabled). The route calls `active_learning.get_uncertain_pairs(n=5)` to retrieve pairs. `shared_molecules` same lookup as search.
+`auc` sourced by reading `training_metadata.json` directly (`json.load`). Returns `500` if `training_metadata.json` is absent (container not initialized correctly). No AUC gate — uncertain pairs are always returned regardless of current AUC so users can always contribute ratings. The route calls `active_learning.get_uncertain_pairs(n=5)` to retrieve pairs. `shared_molecules` same lookup as search.
 
 **`POST /rate` — Request body**
 ```json
@@ -131,7 +131,7 @@ Response:
 ```json
 { "auc_before": 0.847, "auc_after": 0.861, "delta": 0.014 }
 ```
-The route reads `auc_before` from `training_metadata.json`, then loops over the ratings list calling `active_learning.submit_rating(ingredient_a, ingredient_b, rating)` for each pair. `submit_rating` is the correct public entry point — it handles appending to `feedback.csv`, loading the model, running `fine_tune_with_replay` internally, re-exporting embeddings, and re-running scoring. Do not call `fine_tune_with_replay` directly (it is an internal helper requiring pre-loaded state). After the loop completes, the route reads `auc_after` from the updated `training_metadata.json` and returns both values.
+The route reads `auc_before` from `training_metadata.json`, then loops over the ratings list calling `active_learning.submit_rating(ingredient_a, ingredient_b, rating)` for each pair. `submit_rating` is the correct public entry point — it handles appending to `feedback.csv`, loading the model, running `fine_tune_with_replay` internally, re-exporting embeddings, and re-running scoring. Do not call `fine_tune_with_replay` directly (it is an internal helper requiring pre-loaded state). After the loop completes, the route reads `auc_after` from the updated `training_metadata.json` and returns both values. This is a synchronous endpoint — the fine-tune runs inline and the response is returned when complete (~30s). No async job queue.
 
 **`POST /recipe` — Request body**
 ```json
@@ -185,9 +185,9 @@ All pages share the root layout (`web/app/layout.tsx`) which renders the sticky 
 - Edge color: terracotta = Surprising, blue-grey = Expected/Classic
 
 ### Recipe (`/recipe`)
-- Ingredient selector: selected ingredients shown as chips with remove (×) button
-- "+ Add ingredient" opens a dropdown populated from the top-surprise pairs already loaded in the session (not a live search call — matches existing Streamlit behavior)
-- Shared molecules panel shown when ≥2 ingredients selected (computed client-side from `/search` results already in state)
+- Ingredient selector: selected ingredients shown as chips with remove (×) button; starts empty
+- "+ Add ingredient" opens a text search input that calls `GET /search` live and populates a dropdown from results — user can add any ingredient
+- Shared molecules panel shown when ≥2 ingredients selected (computed client-side by intersecting the `/search` result sets for each selected ingredient already fetched during selection)
 - Generate button: calls `POST /recipe` with selected ingredients + precomputed shared molecules + labels, streams response into recipe body
 - Flavor Science callout box rendered when streaming completes (detected by `## Flavor Science` heading in stream)
 
@@ -236,7 +236,7 @@ flavornet-data/
 
 All files must be present for `POST /rate` to execute fine-tuning. If `hetero_data.pt`, `best_model.pt`, or `replay_buffer.pkl` are absent, `fine_tune_with_replay()` will fail silently and return stale AUC values. Upload these on initial `modal deploy` alongside the embeddings.
 
-On `modal deploy`, the current local versions of these files are uploaded to the Volume. After a fine-tune cycle, `active_learning.py` writes updated embeddings and metadata directly to the Volume path.
+Initial population is handled by `scripts/upload_volume.py` — a one-off Modal function that reads each file from local paths and writes it to the volume. Run once before first deploy: `modal run scripts/upload_volume.py`. After a fine-tune cycle, `active_learning.py` writes updated embeddings and metadata directly to the Volume path.
 
 ### FastAPI on Modal
 
@@ -290,7 +290,7 @@ Deploy: `modal deploy api/main.py`
 
 - **Cold start**: Modal container takes ~2-3s on first request. All data-fetching pages show a loading skeleton. No special handling needed beyond the skeleton.
 - **Search miss**: Ingredient not found in embeddings → API returns `404`. Frontend shows "Ingredient not found, try another name."
-- **Rate page AUC gate**: `GET /uncertain-pairs` returns `403` if `training_metadata.json` is absent OR AUC < 0.70. Frontend shows "Model needs more training data before active learning is available."
+- **Rate page server error**: `GET /uncertain-pairs` returns `500` if `training_metadata.json` is absent (volume not initialized). Frontend shows "Rating unavailable — model not initialized."
 - **Recipe stream error**: If Claude API fails mid-stream, frontend shows partial result + "Generation interrupted" notice.
 - **CORS**: Handled by `CORSMiddleware` in FastAPI. Vercel preview deploy URLs (`*.vercel.app`) are whitelisted.
 

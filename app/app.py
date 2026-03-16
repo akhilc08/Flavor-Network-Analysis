@@ -8,7 +8,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import streamlit as st
-import streamlit.components.v1 as components
 from utils.theme import inject_theme
 
 st.set_page_config(
@@ -20,21 +19,9 @@ st.set_page_config(
 
 inject_theme()
 
-LANDING_HTML = """
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
+LANDING_CSS = """
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: system-ui, -apple-system, sans-serif;
-    background: #fdf6ec;
-    color: #2d1b0e;
-    min-height: 100vh;
-  }
-
+  /* ── LANDING PAGE STYLES ── */
   /* ── HERO ── */
   .hero {
     position: relative;
@@ -245,9 +232,9 @@ LANDING_HTML = """
     letter-spacing: 0.04em;
   }
 </style>
-</head>
-<body>
+"""
 
+LANDING_BODY = """
 <!-- ── HERO ── -->
 <div class="hero">
   <div class="hero-bg">
@@ -392,9 +379,7 @@ LANDING_HTML = """
   <div class="footer-brand">FlavorNet</div>
   <div class="footer-meta">Graph Neural Network &middot; Flavor Chemistry &middot; Active Learning</div>
 </div>
-
-</body>
-</html>
 """
 
-components.html(LANDING_HTML, height=1060, scrolling=False)
+st.markdown(LANDING_CSS, unsafe_allow_html=True)
+st.markdown(LANDING_BODY, unsafe_allow_html=True)

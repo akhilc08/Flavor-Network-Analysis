@@ -20,7 +20,6 @@ import pandas as pd
 import torch
 
 SCORED_PAIRS_PATH = Path("scoring/scored_pairs.pkl")
-LABEL_BINS = [-0.001, 0.33, 0.66, 1.001]
 LABEL_NAMES = ["Classic", "Unexpected", "Surprising"]
 
 logger = logging.getLogger(__name__)
@@ -110,10 +109,13 @@ def compute_all_pairs(
         "recipe_familiarity": recipe_fam.astype(np.float64),
     })
 
-    # Apply label bins via pd.cut
+    # Apply percentile-based label bins so labels are evenly distributed
+    p33 = df["surprise_score"].quantile(0.33)
+    p67 = df["surprise_score"].quantile(0.67)
+    label_bins = [df["surprise_score"].min() - 0.001, p33, p67, df["surprise_score"].max() + 0.001]
     df["label"] = pd.cut(
         df["surprise_score"],
-        bins=LABEL_BINS,
+        bins=label_bins,
         labels=LABEL_NAMES,
     )
 

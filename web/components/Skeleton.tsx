@@ -34,7 +34,7 @@ export function CardSkeleton() {
 
 export function RatePairSkeleton() {
   return (
-    <div className="bg-card border border-muted rounded p-6 flex flex-col gap-4 shadow-card mb-4">
+    <div className="bg-card border border-muted rounded p-6 flex flex-col gap-4 shadow-card">
       <div className="flex justify-between">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-5 w-16" />

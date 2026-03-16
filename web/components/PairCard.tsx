@@ -13,10 +13,7 @@ export default function PairCard({ pair, rating, onRate }: PairCardProps) {
     <div className="bg-card rounded-xl border border-[#e8d5bc] p-6 flex flex-col gap-4">
       {/* Ingredient names */}
       <div className="flex flex-col gap-1">
-        <p
-          className="font-serif text-[22px] font-normal text-dark"
-          style={{ fontFamily: 'Georgia, serif' }}
-        >
+        <p className="font-serif text-[22px] font-normal text-dark">
           {pair.ingredient_a}{' '}
           <span className="text-warm-mid font-sans text-[18px]">+</span>{' '}
           {pair.ingredient_b}

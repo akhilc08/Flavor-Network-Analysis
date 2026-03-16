@@ -12,10 +12,12 @@ from __future__ import annotations
 import pickle
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 SCORED_PAIRS_PATH = Path("scoring/scored_pairs.pkl")
 EMBEDDINGS_PATH = Path("model/embeddings/ingredient_embeddings.pkl")
+INGREDIENTS_PATH = Path("data/processed/ingredients.parquet")
 
 
 @st.cache_resource
@@ -34,6 +36,23 @@ def load_embeddings_cached():
         return None
     with open(EMBEDDINGS_PATH, "rb") as f:
         return pickle.load(f)
+
+
+@st.cache_resource
+def load_ingredients_cached():
+    """Load ingredients DataFrame. Returns None if file not found."""
+    if not INGREDIENTS_PATH.exists():
+        return None
+    return pd.read_parquet(INGREDIENTS_PATH)[["ingredient_id", "name"]]
+
+
+def require_ingredients():
+    """Load ingredients or stop page with friendly error. Never returns None."""
+    ing = load_ingredients_cached()
+    if ing is None:
+        st.warning("Ingredients data not found at data/processed/ingredients.parquet")
+        st.stop()
+    return ing
 
 
 def invalidate_scored_pairs() -> None:

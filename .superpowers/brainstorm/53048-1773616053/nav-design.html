@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #f5f0ea; color: #2d1b0e; }
+
+.label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #7a5c42; margin-bottom: 16px; display: block; }
+
+.preview-wrap {
+  background: white;
+  border: 1px solid #e8d5bc;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 24px;
+  box-shadow: 0 2px 12px rgba(45,27,14,0.08);
+}
+
+/* ── THE NAV BAR ── */
+.sim-nav {
+  position: sticky;
+  top: 0;
+  background: #fdf6ec;
+  border-bottom: 1px solid #e8d5bc;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 44px;
+  z-index: 100;
+}
+.sim-logo {
+  font-family: Georgia, serif;
+  font-size: 16px;
+  color: #2d1b0e;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.sim-links {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.sim-link {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7a5c42;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+.sim-link:hover { color: #c4622a; }
+.sim-link.active { color: #c4622a; border-bottom-color: #c4622a; }
+
+/* ── PAGE CONTENT SIMS ── */
+.sim-page {
+  display: none;
+  background: #fdf6ec;
+  min-height: 320px;
+  padding: 32px 48px;
+}
+.sim-page.visible { display: block; }
+
+.page-title {
+  font-family: Georgia, serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: #2d1b0e;
+  margin-bottom: 8px;
+}
+.page-sub {
+  font-size: 13px;
+  color: #7a5c42;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.mock-input {
+  width: 100%;
+  max-width: 480px;
+  border: 1.5px solid #e8d5bc;
+  background: #fff8f0;
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: Georgia, serif;
+  font-size: 16px;
+  color: #2d1b0e;
+  margin-bottom: 20px;
+}
+.mock-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 520px;
+}
+.mock-card {
+  background: #fff8f0;
+  border: 1px solid #e8d5bc;
+  border-radius: 4px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mock-card-name { font-family: Georgia, serif; font-size: 15px; }
+.mock-pill {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(74,124,78,0.3);
+  color: #4a7c4e;
+  background: rgba(74,124,78,0.08);
+}
+.mock-pill.unexpected { border-color: rgba(184,134,11,0.3); color: #b8860b; background: rgba(184,134,11,0.08); }
+
+.mock-graph {
+  width: 100%;
+  max-width: 380px;
+  height: 180px;
+  background: #fff8f0;
+  border: 1px solid #e8d5bc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+
+<div style="padding:24px 24px 8px;">
+  <span class="label">Interactive preview — click nav links to see pages</span>
+</div>
+
+<div class="preview-wrap">
+  <!-- NAV BAR -->
+  <div class="sim-nav">
+    <span class="sim-logo">FlavorNet</span>
+    <div class="sim-links">
+      <span class="sim-link active" onclick="showPage('search',this)">Search</span>
+      <span class="sim-link" onclick="showPage('rate',this)">Rate</span>
+      <span class="sim-link" onclick="showPage('graph',this)">Graph</span>
+      <span class="sim-link" onclick="showPage('recipe',this)">Recipe</span>
+    </div>
+  </div>
+
+  <!-- SEARCH PAGE -->
+  <div class="sim-page visible" id="page-search">
+    <div class="page-title">Ingredient Search</div>
+    <div class="page-sub">Type any ingredient to surface its top molecular pairings.</div>
+    <input class="mock-input" placeholder="e.g. strawberry" value="strawberry">
+    <div class="mock-cards">
+      <div class="mock-card">
+        <span class="mock-card-name">Black pepper</span>
+        <span class="mock-pill">Surprising</span>
+      </div>
+      <div class="mock-card">
+        <span class="mock-card-name">Balsamic vinegar</span>
+        <span class="mock-pill unexpected">Unexpected</span>
+      </div>
+      <div class="mock-card">
+        <span class="mock-card-name">Basil</span>
+        <span class="mock-pill" style="border-color:rgba(196,98,42,0.25);color:#c4622a;background:rgba(196,98,42,0.08);">Classic</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RATE PAGE -->
+  <div class="sim-page" id="page-rate">
+    <div class="page-title">Rate & Improve</div>
+    <div class="page-sub">Rate uncertain pairs to trigger active learning fine-tuning.</div>
+    <div class="mock-cards">
+      <div class="mock-card">
+        <span class="mock-card-name">Coffee + Cardamom</span>
+        <span style="font-size:11px;color:#c4622a;font-weight:600;">Score: 0.51</span>
+      </div>
+      <div class="mock-card">
+        <span class="mock-card-name">Lamb + Strawberry</span>
+        <span style="font-size:11px;color:#c4622a;font-weight:600;">Score: 0.49</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAPH PAGE -->
+  <div class="sim-page" id="page-graph">
+    <div class="page-title">Flavor Graph</div>
+    <div class="page-sub">Navigate the ingredient network visually.</div>
+    <div class="mock-graph">
+      <svg width="340" height="160" viewBox="0 0 340 160">
+        <g stroke="#c4622a" stroke-width="1.5" opacity="0.4">
+          <line x1="170" y1="80" x2="260" y2="40"/>
+          <line x1="170" y1="80" x2="280" y2="100"/>
+          <line x1="170" y1="80" x2="220" y2="140"/>
+          <line x1="170" y1="80" x2="80" y2="40"/>
+          <line x1="170" y1="80" x2="60" y2="110"/>
+          <line x1="170" y1="80" x2="110" y2="140"/>
+        </g>
+        <g stroke="#7a8fc4" stroke-width="1" opacity="0.3">
+          <line x1="260" y1="40" x2="280" y2="100"/>
+          <line x1="80" y1="40" x2="60" y2="110"/>
+        </g>
+        <circle cx="170" cy="80" r="10" fill="#c4622a"/>
+        <circle cx="260" cy="40" r="6" fill="#e8a07a"/>
+        <circle cx="280" cy="100" r="5" fill="#e8a07a"/>
+        <circle cx="220" cy="140" r="6" fill="#e8a07a"/>
+        <circle cx="80" cy="40" r="5" fill="#e8a07a"/>
+        <circle cx="60" cy="110" r="6" fill="#e8a07a"/>
+        <circle cx="110" cy="140" r="4" fill="#e8a07a"/>
+        <text x="170" y="84" text-anchor="middle" font-size="8" fill="white" font-family="system-ui">strawberry</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- RECIPE PAGE -->
+  <div class="sim-page" id="page-recipe">
+    <div class="page-title">Recipe Generation</div>
+    <div class="page-sub">Pick 2–3 surprising ingredients and generate a recipe with molecular rationale.</div>
+    <div class="mock-cards" style="max-width:400px;">
+      <div class="mock-card" style="border-color:rgba(196,98,42,0.3);">
+        <span class="mock-card-name" style="color:#c4622a;">+ Strawberry</span>
+      </div>
+      <div class="mock-card" style="border-color:rgba(196,98,42,0.3);">
+        <span class="mock-card-name" style="color:#c4622a;">+ Black Pepper</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.sim-page').forEach(p => p.classList.remove('visible'));
+  document.querySelectorAll('.sim-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('visible');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

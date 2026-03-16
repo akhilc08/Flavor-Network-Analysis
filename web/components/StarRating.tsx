@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 interface StarRatingProps {
   value: number
@@ -8,6 +8,32 @@ interface StarRatingProps {
 
 export default function StarRating({ value, onChange }: StarRatingProps) {
   const [hovered, setHovered] = useState(0)
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  function handleKeyDown(star: number, e: React.KeyboardEvent<HTMLButtonElement>) {
+    const key = e.key
+    let nextStar: number | null = null
+
+    if (key === 'ArrowRight' || key === 'ArrowUp') {
+      if (star < 5) {
+        nextStar = star + 1
+        e.preventDefault()
+      }
+    } else if (key === 'ArrowLeft' || key === 'ArrowDown') {
+      if (star > 1) {
+        nextStar = star - 1
+        e.preventDefault()
+      }
+    }
+
+    if (nextStar !== null) {
+      const nextButton = buttonRefs.current[nextStar - 1]
+      if (nextButton) {
+        onChange(nextStar)
+        nextButton.focus()
+      }
+    }
+  }
 
   return (
     <div
@@ -27,12 +53,16 @@ export default function StarRating({ value, onChange }: StarRatingProps) {
         return (
           <button
             key={star}
+            ref={(el) => {
+              buttonRefs.current[star - 1] = el
+            }}
             type="button"
             role="radio"
             aria-label={`${star} stars`}
             aria-checked={value === star}
             onClick={() => onChange(star)}
             onMouseEnter={() => setHovered(star)}
+            onKeyDown={(e) => handleKeyDown(star, e)}
             style={{ color, fontSize: '28px', fontFamily: 'Georgia, serif', lineHeight: 1 }}
             className="bg-transparent border-none cursor-pointer p-0 leading-none transition-colors duration-100"
           >

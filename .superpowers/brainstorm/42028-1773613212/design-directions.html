@@ -1,0 +1,105 @@
+<h2>Which direction should we take the UI?</h2>
+<p class="subtitle">All three fix the sidebar/header bugs. The difference is the visual feel.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fdf6ec;padding:20px;font-family:Georgia,serif">
+      <!-- Direction A: Clean Editorial (keep existing direction, fix bugs) -->
+      <div style="display:flex;height:160px;border:1px solid #e8d5bc;border-radius:4px;overflow:hidden">
+        <div style="width:80px;background:#f0e6d3;padding:12px 8px;border-right:1px solid #e8d5bc;flex-shrink:0">
+          <div style="font-size:8px;font-family:Georgia,serif;font-weight:700;color:#2d1b0e;margin-bottom:12px">FPN</div>
+          <div style="font-size:7px;color:#c4622a;margin-bottom:4px;border-left:2px solid #c4622a;padding-left:4px">Search</div>
+          <div style="font-size:7px;color:#7a5c42;margin-bottom:4px;padding-left:6px">Rate</div>
+          <div style="font-size:7px;color:#7a5c42;margin-bottom:4px;padding-left:6px">Graph</div>
+          <div style="font-size:7px;color:#7a5c42;padding-left:6px">Recipe</div>
+        </div>
+        <div style="padding:12px;flex:1;background:#fdf6ec">
+          <div style="font-size:10px;color:#2d1b0e;font-family:Georgia,serif;font-weight:600;margin-bottom:6px">Discover hidden pairings</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="background:#fff8f0;border:1px solid #e8d5bc;border-radius:3px;padding:8px">
+              <div style="font-size:6px;color:#c4622a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Search</div>
+              <div style="font-size:8px;color:#2d1b0e;font-family:Georgia,serif">Ingredient pairings</div>
+              <div style="height:2px;background:#e8d5bc;margin-top:6px;border-radius:1px"><div style="width:60%;height:100%;background:#c4622a;border-radius:1px"></div></div>
+            </div>
+            <div style="background:#fff8f0;border:1px solid #e8d5bc;border-radius:3px;padding:8px">
+              <div style="font-size:6px;color:#c4622a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Rate</div>
+              <div style="font-size:8px;color:#2d1b0e;font-family:Georgia,serif">Improve model</div>
+              <div style="height:2px;background:#e8d5bc;margin-top:6px;border-radius:1px"><div style="width:40%;height:100%;background:#c4622a;border-radius:1px"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Clean Editorial (polish existing)</h3>
+      <p>Same earthy serif aesthetic — fix the sidebar bug, tighten spacing, add card hover states and accent bars. Feels like a food magazine. Minimal disruption to existing code.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;padding:20px">
+      <!-- Direction B: Dark lab / scientific -->
+      <div style="display:flex;height:160px;border:1px solid #2a3a2a;border-radius:4px;overflow:hidden">
+        <div style="width:80px;background:#161b22;padding:12px 8px;border-right:1px solid #2a3a2a;flex-shrink:0">
+          <div style="font-size:8px;font-family:monospace;font-weight:700;color:#58d68d;margin-bottom:12px">FPN</div>
+          <div style="font-size:7px;color:#58d68d;margin-bottom:4px;border-left:2px solid #58d68d;padding-left:4px">Search</div>
+          <div style="font-size:7px;color:#6a8f6a;margin-bottom:4px;padding-left:6px">Rate</div>
+          <div style="font-size:7px;color:#6a8f6a;margin-bottom:4px;padding-left:6px">Graph</div>
+          <div style="font-size:7px;color:#6a8f6a;padding-left:6px">Recipe</div>
+        </div>
+        <div style="padding:12px;flex:1;background:#0f1117">
+          <div style="font-size:10px;color:#e6e6e6;font-family:monospace;margin-bottom:6px">flavor_network.discover()</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="background:#161b22;border:1px solid #2a3a2a;border-radius:3px;padding:8px;border-top:2px solid #58d68d">
+              <div style="font-size:6px;color:#58d68d;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Search</div>
+              <div style="font-size:8px;color:#e6e6e6;font-family:monospace">Ingredient pairs</div>
+            </div>
+            <div style="background:#161b22;border:1px solid #2a3a2a;border-radius:3px;padding:8px;border-top:2px solid #3a8abd">
+              <div style="font-size:6px;color:#3a8abd;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">Rate</div>
+              <div style="font-size:8px;color:#e6e6e6;font-family:monospace">Train model</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Dark Lab (scientific / ML aesthetic)</h3>
+      <p>Dark background, monospace accents, green/teal for the network data. Feels like a research tool. Better visual contrast for graph visualizations. Bigger redesign.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f7f5f2;padding:20px">
+      <!-- Direction C: Bold typographic -->
+      <div style="display:flex;height:160px;border:1px solid #ddd;border-radius:4px;overflow:hidden">
+        <div style="width:80px;background:#1a1a1a;padding:12px 8px;flex-shrink:0">
+          <div style="font-size:9px;font-family:Georgia,serif;font-weight:700;color:#fff;margin-bottom:2px">Flavor</div>
+          <div style="font-size:9px;font-family:Georgia,serif;font-weight:700;color:#e07b39;margin-bottom:12px">Network</div>
+          <div style="font-size:7px;color:#fff;margin-bottom:4px;border-left:2px solid #e07b39;padding-left:4px">Search</div>
+          <div style="font-size:7px;color:#888;margin-bottom:4px;padding-left:6px">Rate</div>
+          <div style="font-size:7px;color:#888;margin-bottom:4px;padding-left:6px">Graph</div>
+          <div style="font-size:7px;color:#888;padding-left:6px">Recipe</div>
+        </div>
+        <div style="padding:12px;flex:1;background:#f7f5f2">
+          <div style="font-size:14px;color:#1a1a1a;font-family:Georgia,serif;font-weight:700;margin-bottom:8px;line-height:1">Discover<br>hidden pairings</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="background:#fff;border-radius:3px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+              <div style="font-size:6px;color:#e07b39;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;font-weight:700">01 — Search</div>
+              <div style="font-size:8px;color:#1a1a1a;font-family:Georgia,serif;font-weight:600">Pairings</div>
+            </div>
+            <div style="background:#fff;border-radius:3px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+              <div style="font-size:6px;color:#e07b39;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;font-weight:700">02 — Rate</div>
+              <div style="font-size:8px;color:#1a1a1a;font-family:Georgia,serif;font-weight:600">Train</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Bold Editorial (high contrast, numbered)</h3>
+      <p>Dark sidebar, numbered sections (01 — Search, 02 — Rate…), white cards with shadow, bold serif headings. More visual impact. Fixes same bugs, more opinionated look.</p>
+    </div>
+  </div>
+
+</div>

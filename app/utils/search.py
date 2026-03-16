@@ -50,11 +50,20 @@ def get_top_pairings(query: str, pairs, ingredients=None) -> list:
             df_b = pairs[mask_b].copy()
             df_b["partner_id"] = df_b["ingredient_a"]
 
-            combined = (
-                pd.concat([df_a, df_b])
-                .sort_values("surprise_score", ascending=False)
-                .head(10)
-            )
+            all_pairs = pd.concat([df_a, df_b])
+
+            # Pick a balanced mix: 4 Surprising + 3 Unexpected + 3 Classic,
+            # each bucket sorted by pairing_score so we surface best-quality picks.
+            buckets = {"Surprising": 4, "Unexpected": 3, "Classic": 3}
+            frames = []
+            for label, n in buckets.items():
+                bucket = (
+                    all_pairs[all_pairs["label"].astype(str) == label]
+                    .sort_values("pairing_score", ascending=False)
+                    .head(n)
+                )
+                frames.append(bucket)
+            combined = pd.concat(frames).sort_values("pairing_score", ascending=False)
 
             results = []
             for row in combined.itertuples(index=False):

@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import streamlit as st
+import streamlit.components.v1 as components
 from utils.theme import inject_theme
 from utils.cache import require_scored_pairs, require_ingredients
 from utils.search import get_top_pairings, format_why_it_works
@@ -129,7 +130,11 @@ try:
                 unsafe_allow_html=True,
             )
         else:
-            st.markdown(render_cards_html(query, results), unsafe_allow_html=True)
+            html = render_cards_html(query, results)
+            # Each card row is ~320px tall; header ~80px
+            n_rows = (len(results) + 1) // 2
+            height = 80 + n_rows * 340
+            components.html(html, height=height, scrolling=False)
 
 except Exception as e:
     st.error(f"Something went wrong loading ingredient data. ({type(e).__name__})")

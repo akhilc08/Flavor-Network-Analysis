@@ -1,0 +1,111 @@
+<h2>Graph Explorer — which library fits best?</h2>
+<p class="subtitle">PyVis is being replaced — pick the interaction style you want</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="sigma" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f5ede0;padding:16px;font-family:Georgia,serif;position:relative;min-height:160px;">
+      <!-- Simulated Sigma.js-style graph -->
+      <svg width="100%" height="140" style="position:absolute;top:0;left:0;opacity:0.15">
+        <line x1="80" y1="70" x2="160" y2="40" stroke="#c4622a" stroke-width="2"/>
+        <line x1="80" y1="70" x2="200" y2="90" stroke="#c4622a" stroke-width="1"/>
+        <line x1="80" y1="70" x2="130" y2="120" stroke="#8b9dc3" stroke-width="1.5"/>
+        <line x1="160" y1="40" x2="240" y2="55" stroke="#c4622a" stroke-width="2"/>
+        <line x1="200" y1="90" x2="240" y2="55" stroke="#8b9dc3" stroke-width="1"/>
+        <line x1="130" y1="120" x2="200" y2="90" stroke="#c4622a" stroke-width="1.5"/>
+      </svg>
+      <div style="position:relative;z-index:1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:12px;color:#2d1b0e;font-weight:600;">Centered on: Strawberry</span>
+          <span style="font-size:11px;color:#888;">drag · zoom · click node</span>
+        </div>
+        <div style="background:#2d1b0e;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#e8d5bc;font-size:10px;font-weight:700;margin:0 auto 8px;">STRAW<br>BERRY</div>
+        <div style="display:flex;justify-content:center;gap:12px;">
+          <div style="background:#c4622a;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;text-align:center;">MISO</div>
+          <div style="background:#8b9dc3;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:7px;text-align:center;">BASIL</div>
+          <div style="background:#c4622a;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:7px;text-align:center;">BLUE CHEESE</div>
+          <div style="background:#8b9dc3;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:7px;text-align:center;">MINT</div>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:#888;text-align:center;">Click any node → re-centers graph on that ingredient</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Sigma.js (Recommended)</h3>
+      <p>Fast WebGL rendering for large graphs. Click a node → it becomes the new center (what PyVis couldn't do). Drag, zoom, hover tooltips. Best performance at 200+ nodes.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="d3" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f5ede0;padding:16px;font-family:Georgia,serif;min-height:160px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;color:#2d1b0e;font-weight:600;">Force simulation</span>
+        <span style="font-size:11px;color:#888;">physics · drag · pin</span>
+      </div>
+      <svg width="100%" height="120">
+        <!-- D3 force simulation style -->
+        <defs>
+          <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 z" fill="#c4622a"/>
+          </marker>
+        </defs>
+        <line x1="130" y1="60" x2="80" y2="35" stroke="#c4622a" stroke-width="2.5" marker-end="url(#arrow)"/>
+        <line x1="130" y1="60" x2="190" y2="30" stroke="#c4622a" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="130" y1="60" x2="170" y2="95" stroke="#8b9dc3" stroke-width="1.5"/>
+        <line x1="130" y1="60" x2="75" y2="95" stroke="#8b9dc3" stroke-width="1"/>
+        <line x1="80" y1="35" x2="190" y2="30" stroke="#c4622a" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <circle cx="130" cy="60" r="16" fill="#2d1b0e"/>
+        <text x="130" y="64" text-anchor="middle" fill="#e8d5bc" font-size="7">STRAW</text>
+        <circle cx="80" cy="35" r="11" fill="#c4622a"/>
+        <text x="80" y="38" text-anchor="middle" fill="#fff" font-size="6">MISO</text>
+        <circle cx="190" cy="30" r="12" fill="#c4622a"/>
+        <text x="190" y="34" text-anchor="middle" fill="#fff" font-size="6">CHEESE</text>
+        <circle cx="170" cy="95" r="9" fill="#8b9dc3"/>
+        <text x="170" y="98" text-anchor="middle" fill="#fff" font-size="6">MINT</text>
+        <circle cx="75" cy="95" r="9" fill="#8b9dc3"/>
+        <text x="75" y="98" text-anchor="middle" fill="#fff" font-size="6">BASIL</text>
+      </svg>
+      <div style="font-size:10px;color:#888;text-align:center;">Physics-based — nodes repel, edges attract. Can pin nodes by dragging.</div>
+    </div>
+    <div class="card-body">
+      <h3>B — D3 Force Graph</h3>
+      <p>Physics simulation — nodes repel each other, edges pull them together. More organic feel. Fully customizable but more complex to build. Can get messy with 50+ nodes.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="cytoscape" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f5ede0;padding:16px;font-family:Georgia,serif;min-height:160px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;color:#2d1b0e;font-weight:600;">Grid / Concentric layout</span>
+        <span style="font-size:11px;color:#888;">structured · clean · stable</span>
+      </div>
+      <!-- Cytoscape concentric layout mockup -->
+      <svg width="100%" height="120">
+        <circle cx="130" cy="60" r="45" fill="none" stroke="#e8d5bc" stroke-width="1" stroke-dasharray="4,3"/>
+        <circle cx="130" cy="60" r="25" fill="none" stroke="#e8d5bc" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="130" y1="60" x2="130" y2="15" stroke="#c4622a" stroke-width="2"/>
+        <line x1="130" y1="60" x2="175" y2="60" stroke="#c4622a" stroke-width="2"/>
+        <line x1="130" y1="60" x2="85" y2="90" stroke="#8b9dc3" stroke-width="1.5"/>
+        <line x1="130" y1="60" x2="85" y2="35" stroke="#8b9dc3" stroke-width="1"/>
+        <line x1="130" y1="60" x2="170" y2="95" stroke="#c4622a" stroke-width="2"/>
+        <circle cx="130" cy="60" r="14" fill="#2d1b0e"/>
+        <text x="130" y="64" text-anchor="middle" fill="#e8d5bc" font-size="7">STRAW</text>
+        <circle cx="130" cy="15" r="10" fill="#c4622a"/>
+        <text x="130" y="18" text-anchor="middle" fill="#fff" font-size="6">MISO</text>
+        <circle cx="175" cy="60" r="10" fill="#c4622a"/>
+        <text x="175" y="63" text-anchor="middle" fill="#fff" font-size="6">BLUE C.</text>
+        <circle cx="85" cy="35" r="8" fill="#8b9dc3"/>
+        <text x="85" y="38" text-anchor="middle" fill="#fff" font-size="6">BASIL</text>
+        <circle cx="85" cy="90" r="8" fill="#8b9dc3"/>
+        <text x="85" y="93" text-anchor="middle" fill="#fff" font-size="6">MINT</text>
+        <circle cx="170" cy="95" r="9" fill="#c4622a"/>
+        <text x="170" y="98" text-anchor="middle" fill="#fff" font-size="6">BRIE</text>
+      </svg>
+      <div style="font-size:10px;color:#888;text-align:center;">Concentric rings by score — center node surrounded by ranked pairings.</div>
+    </div>
+    <div class="card-body">
+      <h3>C — Cytoscape.js</h3>
+      <p>Structured layout algorithms (concentric, breadth-first). Nodes arranged by score into rings around the center ingredient. Less chaotic than force simulation, very readable.</p>
+    </div>
+  </div>
+
+</div>

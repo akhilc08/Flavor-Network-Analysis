@@ -1,0 +1,81 @@
+<h2>Top Navigation — Which style fits FlavorNet?</h2>
+<p class="subtitle">All three keep the existing earthy palette. Pick the vibe that feels right.</p>
+
+<div class="cards">
+
+  <!-- Option A: Slim editorial bar -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fdf6ec;border-bottom:1px solid #e8d5bc;padding:0;">
+      <!-- Mockup A -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:#fdf6ec;border-bottom:1px solid #e8d5bc;">
+        <span style="font-family:Georgia,serif;font-size:16px;color:#2d1b0e;letter-spacing:-0.02em;">FlavorNet</span>
+        <nav style="display:flex;gap:0;">
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;padding:6px 16px;text-decoration:none;border-bottom:2px solid transparent;">Search</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#c4622a;padding:6px 16px;text-decoration:none;border-bottom:2px solid #c4622a;">Rate</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;padding:6px 16px;text-decoration:none;border-bottom:2px solid transparent;">Graph</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;padding:6px 16px;text-decoration:none;border-bottom:2px solid transparent;">Recipe</a>
+        </nav>
+      </div>
+      <div style="padding:16px 24px 12px;background:#fdf6ec;">
+        <div style="height:8px;background:#e8d5bc;border-radius:2px;width:60%;margin-bottom:8px;"></div>
+        <div style="height:8px;background:#e8d5bc;border-radius:2px;width:40%;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Slim Editorial Bar</h3>
+      <p>Compact single-line bar. Logo left, text nav right. Active page gets an underline accent. Very clean, minimal footprint — content starts immediately below.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Pill nav -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fdf6ec;border-bottom:1px solid #e8d5bc;padding:0;">
+      <!-- Mockup B -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fdf6ec;border-bottom:1px solid #e8d5bc;">
+        <span style="font-family:Georgia,serif;font-size:16px;color:#2d1b0e;letter-spacing:-0.02em;">FlavorNet</span>
+        <nav style="display:flex;gap:6px;align-items:center;">
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7a5c42;padding:5px 14px;text-decoration:none;border:1px solid transparent;border-radius:2px;">Search</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#c4622a;padding:5px 14px;text-decoration:none;border:1px solid #c4622a;border-radius:2px;background:rgba(196,98,42,0.07);">Rate</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7a5c42;padding:5px 14px;text-decoration:none;border:1px solid transparent;border-radius:2px;">Graph</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#7a5c42;padding:5px 14px;text-decoration:none;border:1px solid transparent;border-radius:2px;">Recipe</a>
+        </nav>
+      </div>
+      <div style="padding:16px 24px 12px;background:#fdf6ec;">
+        <div style="height:8px;background:#e8d5bc;border-radius:2px;width:60%;margin-bottom:8px;"></div>
+        <div style="height:8px;background:#e8d5bc;border-radius:2px;width:40%;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Pill Nav</h3>
+      <p>Same slim bar but active page gets an outlined pill instead of an underline. Matches the existing pill badges in the search results — feels cohesive with the rest of the UI.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Taller editorial header band -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fdf6ec;border-bottom:1px solid #e8d5bc;padding:0;">
+      <!-- Mockup C -->
+      <div style="background:#f0e6d3;border-bottom:1px solid #e8d5bc;padding:14px 24px 0;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-family:Georgia,serif;font-size:18px;color:#2d1b0e;letter-spacing:-0.02em;">FlavorNet</span>
+          <span style="font-family:system-ui;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#7a5c42;">Molecular Gastronomy</span>
+        </div>
+        <nav style="display:flex;gap:0;">
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;padding:7px 16px 7px;text-decoration:none;border-bottom:2px solid transparent;display:block;">Search</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#c4622a;padding:7px 16px 7px;text-decoration:none;border-bottom:2px solid #c4622a;display:block;">Rate</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;padding:7px 16px 7px;text-decoration:none;border-bottom:2px solid transparent;display:block;">Graph</a>
+          <a style="font-family:system-ui;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7a5c42;padding:7px 16px 7px;text-decoration:none;border-bottom:2px solid transparent;display:block;">Recipe</a>
+        </nav>
+      </div>
+      <div style="padding:16px 24px 12px;background:#fdf6ec;">
+        <div style="height:8px;background:#e8d5bc;border-radius:2px;width:60%;margin-bottom:8px;"></div>
+        <div style="height:8px;background:#e8d5bc;border-radius:2px;width:40%;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Editorial Header Band</h3>
+      <p>Two-row header: brand + tagline on top, nav tabs underneath. Uses the warm sand (#f0e6d3) background from the old sidebar — feels like a newspaper masthead. Most "editorial" of the three.</p>
+    </div>
+  </div>
+
+</div>

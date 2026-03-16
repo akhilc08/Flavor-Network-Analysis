@@ -72,10 +72,12 @@ def parse_args() -> argparse.Namespace:
 # ---------------------------------------------------------------------------
 
 def get_device() -> torch.device:
-    """Return MPS if available, CPU otherwise (with warning)."""
+    """Return CUDA > MPS > CPU, with a warning if falling back to CPU."""
+    if torch.cuda.is_available():
+        return torch.device("cuda")
     if torch.backends.mps.is_available():
         return torch.device("mps")
-    print("[WARNING] MPS not available — training on CPU (expect ~5x slower)")
+    print("[WARNING] No GPU found — training on CPU (expect ~5x slower)")
     return torch.device("cpu")
 
 

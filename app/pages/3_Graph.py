@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import streamlit as st
 import streamlit.components.v1 as components
 from utils.theme import inject_theme
-from utils.cache import require_scored_pairs
+from utils.cache import require_scored_pairs, require_ingredients
 from utils.graph import build_pyvis_graph, get_graph_html
 
 inject_theme()
@@ -45,11 +45,9 @@ st.markdown(
 
 try:
     pairs = require_scored_pairs()
+    ingredients = require_ingredients()
 
-    all_ingredients = sorted(set(
-        getattr(p, "ingredient_a", "") for p in pairs
-        if getattr(p, "ingredient_a", "")
-    ))
+    all_ingredients = sorted(ingredients["name"].tolist())
 
     if not all_ingredients:
         st.warning("No ingredient data available. Run the pipeline first.")
@@ -64,7 +62,7 @@ try:
 
     if selected:
         with st.spinner(f"Building graph for {selected.title()}\u2026"):
-            net = build_pyvis_graph(selected, pairs)
+            net = build_pyvis_graph(selected, pairs, ingredients)
             html_content = get_graph_html(net)
 
         node_count = len(net.nodes)

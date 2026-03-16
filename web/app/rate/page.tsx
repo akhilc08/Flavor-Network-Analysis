@@ -24,7 +24,7 @@ export default function RatePage() {
     setRatings({})
     try {
       const data = await getUncertainPairs()
-      setPairs(data.pairs.slice(0, 5))
+      setPairs(data.pairs)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load pairs. Please try again.')
     } finally {
@@ -40,7 +40,7 @@ export default function RatePage() {
     setRatings((prev) => ({ ...prev, [key]: value }))
   }
 
-  const allRated = pairs.length === 5 && pairs.every((p) => (ratings[pairKey(p)] ?? 0) > 0)
+  const allRated = pairs.length > 0 && pairs.every((p) => (ratings[pairKey(p)] ?? 0) > 0)
 
   async function handleSubmit() {
     setSubmitting(true)
@@ -158,7 +158,7 @@ export default function RatePage() {
             </button>
             {!allRated && (
               <p className="font-sans text-[12px] text-warm-mid mt-2">
-                Rate all 5 pairings to submit
+                Rate all {pairs.length} pairing{pairs.length !== 1 ? 's' : ''} to submit
               </p>
             )}
           </div>

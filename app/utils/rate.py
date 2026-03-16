@@ -4,9 +4,26 @@ from __future__ import annotations
 
 def get_uncertain_pairs_for_display(pairs: list, n: int = 5) -> list:
     """Return the n pairs most uncertain (pairing_score closest to 0.5)."""
+    from types import SimpleNamespace
+    from pathlib import Path
     try:
         from scoring.score import get_uncertain_pairs
-        return get_uncertain_pairs(pairs, n)
+        records = get_uncertain_pairs(n)
+
+        # scored_pairs uses integer ingredient IDs — resolve to names
+        try:
+            import pandas as pd
+            ing_path = Path("data/processed/ingredients.parquet")
+            if ing_path.exists():
+                ing_df = pd.read_parquet(ing_path, columns=["ingredient_id", "name"])
+                id_to_name = dict(zip(ing_df["ingredient_id"], ing_df["name"]))
+                for d in records:
+                    d["ingredient_a"] = id_to_name.get(d["ingredient_a"], str(d["ingredient_a"]))
+                    d["ingredient_b"] = id_to_name.get(d["ingredient_b"], str(d["ingredient_b"]))
+        except Exception:
+            pass
+
+        return [SimpleNamespace(**d) for d in records]
     except ImportError:
         # Fallback if Phase 5 not yet built
         return sorted(pairs, key=lambda p: abs(getattr(p, "pairing_score", 0.5) - 0.5))[:n]
