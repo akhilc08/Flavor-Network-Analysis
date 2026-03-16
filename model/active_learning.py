@@ -371,6 +371,37 @@ def is_active_learning_enabled() -> bool:
         return False
 
 
+def get_uncertain_pairs(n: int = 5) -> list[dict]:
+    """
+    Return up to n scored pairs with prediction confidence closest to 0.5
+    (most uncertain for the model).
+
+    Reads scored_pairs.pkl from DATA_DIR. Each returned dict has keys:
+        ingredient_a, ingredient_b, pairing_score, surprise_score, label.
+
+    Returns an empty list if the artifact is missing or unreadable.
+    """
+    import pickle
+    from pathlib import Path as _Path
+
+    scored_pairs_path = _Path("/data/scored_pairs.pkl")
+    try:
+        with open(scored_pairs_path, "rb") as f:
+            pairs = pickle.load(f)
+    except Exception as exc:
+        logger.warning("get_uncertain_pairs: could not load scored_pairs.pkl: %s", exc)
+        return []
+
+    # Sort by |pairing_score - 0.5| ascending — most uncertain first
+    try:
+        sorted_pairs = sorted(pairs, key=lambda p: abs(float(p.get("pairing_score", 0.5)) - 0.5))
+    except Exception as exc:
+        logger.warning("get_uncertain_pairs: sort failed: %s", exc)
+        sorted_pairs = pairs
+
+    return sorted_pairs[:n]
+
+
 def submit_rating(ingredient_a: str, ingredient_b: str, rating: int) -> dict:
     """
     Accept a user rating, trigger fine-tuning, and return AUC delta.
@@ -409,27 +440,60 @@ def submit_rating(ingredient_a: str, ingredient_b: str, rating: int) -> dict:
     # 3. Fine-tune round number (checkpoint naming)
     round_n = _get_finetune_round()
 
-    # 4. Load graph
+    # 4. Load graph — hetero_data.pt is a dict produced by Phase 3 (build_graph.py)
+    # Keys: 'graph' (HeteroData), 'val_data', 'test_data', 'ingredient_id_to_idx',
+    #        'molecule_id_to_idx'.
     try:
-        hetero_data = torch.load(GRAPH_PATH, map_location="cpu", weights_only=False)
+        graph_payload = torch.load(GRAPH_PATH, map_location="cpu", weights_only=False)
+        if isinstance(graph_payload, dict):
+            hetero_data = graph_payload["graph"]
+            # Attach the id map as an attribute so helpers can access it
+            hetero_data.ingredient_id_to_idx = graph_payload.get("ingredient_id_to_idx", {})
+            _graph_payload = graph_payload   # keep for val_edges extraction below
+        else:
+            hetero_data = graph_payload
+            hetero_data.ingredient_id_to_idx = getattr(hetero_data, "ingredient_id_to_idx", {})
+            _graph_payload = None
     except Exception as exc:
         logger.warning("Could not load hetero_data.pt: %s — returning zero AUC", exc)
         return {"auc_before": 0.0, "auc_after": 0.0}
 
-    # 5. Load HeteroGAT model
+    # 5. Load FlavorGAT model (Phase 4 artifact is model.gat_model.FlavorGAT)
+    # The plan spec referenced model.train.HeteroGAT; actual class is FlavorGAT
+    # in model.gat_model (confirmed from train_gat.py imports).
     try:
-        from model.train import HeteroGAT
+        from model.gat_model import FlavorGAT
     except ImportError:
-        logger.warning("model.train.HeteroGAT not found — returning zero AUC")
-        return {"auc_before": 0.0, "auc_after": 0.0}
+        try:
+            import importlib
+            gat_mod = importlib.import_module("model.gat_model")
+            FlavorGAT = gat_mod.FlavorGAT  # type: ignore[assignment]
+        except Exception as exc2:
+            logger.warning("model.gat_model.FlavorGAT not found: %s — returning zero AUC", exc2)
+            return {"auc_before": 0.0, "auc_after": 0.0}
 
     try:
-        model = HeteroGAT(hetero_data.metadata())
-        state = torch.load(BEST_MODEL_PATH, map_location="cpu", weights_only=True)
-        model.load_state_dict(state)
+        checkpoint = torch.load(BEST_MODEL_PATH, map_location="cpu", weights_only=False)
+        # best_model.pt may be a plain state_dict or a dict with model_state_dict key
+        if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+            state_dict = checkpoint["model_state_dict"]
+        else:
+            state_dict = checkpoint
+
+        # Infer hyperparameters from saved state_dict to avoid shape mismatch.
+        # proj.ingredient.weight shape: (hidden_channels, in_features)
+        # att_src shape: (1, heads, out_per_head) where out_per_head = hidden_channels // heads
+        # embed_proj.ingredient.weight shape: (embed_dim, hidden_channels)
+        _hidden = state_dict["proj.ingredient.weight"].shape[0]
+        _heads = state_dict[
+            "convs.0.convs.<ingredient___contains___molecule>.att_src"
+        ].shape[1]
+        _embed_dim = state_dict["embed_proj.ingredient.weight"].shape[0]
+        model = FlavorGAT(hidden_channels=_hidden, embed_dim=_embed_dim, heads=_heads)
+        model.load_state_dict(state_dict)
         model.train()
     except Exception as exc:
-        logger.warning("Could not load HeteroGAT from best_model.pt: %s — returning zero AUC", exc)
+        logger.warning("Could not load FlavorGAT from best_model.pt: %s — returning zero AUC", exc)
         return {"auc_before": 0.0, "auc_after": 0.0}
 
     # 6. Save pre-finetune checkpoint BEFORE any weight updates
@@ -438,12 +502,31 @@ def submit_rating(ingredient_a: str, ingredient_b: str, rating: int) -> dict:
     torch.save(model.state_dict(), ckpt_path)
     logger.info("Saved pre-finetune checkpoint: %s", ckpt_path)
 
-    # 7. Load val_edges (graceful if missing)
-    if VAL_EDGES_PATH.exists():
-        val_edges = torch.load(VAL_EDGES_PATH, map_location="cpu", weights_only=False)
+    # 7. Build val_edges dict {"pos": Tensor(2,n), "neg": Tensor(2,n)} for AUC computation.
+    # val_data lives inside the graph_payload dict (Phase 3 format).
+    # Fall back to standalone val_edges.pt if available.
+    val_edges = None
+    if _graph_payload is not None and "val_data" in _graph_payload:
+        try:
+            val_data = _graph_payload["val_data"]
+            co_val = val_data[("ingredient", "co_occurs", "ingredient")]
+            ei = co_val.edge_label_index   # (2, n)
+            el = co_val.edge_label         # (n,) — 1.0 positive, 0.0 negative
+            pos_mask = el == 1.0
+            neg_mask = el == 0.0
+            val_edges = {
+                "pos": ei[:, pos_mask],
+                "neg": ei[:, neg_mask],
+            }
+        except Exception as exc:
+            logger.warning("Could not extract val_edges from graph_payload: %s", exc)
+    elif VAL_EDGES_PATH.exists():
+        try:
+            val_edges = torch.load(VAL_EDGES_PATH, map_location="cpu", weights_only=False)
+        except Exception as exc:
+            logger.warning("Could not load val_edges.pt: %s", exc)
     else:
         logger.warning("val_edges.pt missing — AUC will be 0.5")
-        val_edges = None
 
     # 8. Load replay buffer (graceful if missing)
     if REPLAY_BUFFER_PATH.exists():

@@ -34,3 +34,6 @@ def health():
 
 from api.routes.search import router as search_router
 fastapi_app.include_router(search_router)
+
+from api.routes.rate import router as rate_router
+fastapi_app.include_router(rate_router)
