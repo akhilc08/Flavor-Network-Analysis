@@ -12,18 +12,22 @@ router = APIRouter()
 def search(q: str, limit: int = 10):
     from scoring.score import get_top_pairings
     data = load_all_data()
-    pairs = get_top_pairings(q.strip().lower(), n=limit)
+    q_lower = q.strip().lower()
+    pairs = get_top_pairings(q_lower, n=limit)
     if not pairs:
         raise HTTPException(status_code=404, detail=f"Ingredient '{q}' not found.")
     mol_lookup = data["mol_lookup"]
     pairings = []
     for p in pairs:
-        b = p.get("ingredient_b", "")
+        # Partner could be in either column
+        a = p.get("ingredient_a", "")
+        b_candidate = p.get("ingredient_b", "")
+        partner = b_candidate if a.lower() == q_lower else a
         pairings.append({
-            "name": b,
+            "name": partner,
             "pairing_score": round(float(p.get("pairing_score", 0)), 4),
             "surprise_score": round(float(p.get("surprise_score", 0)), 4),
             "label": p.get("label", "Classic"),
-            "shared_molecules": get_shared_molecules(q, b, mol_lookup),
+            "shared_molecules": get_shared_molecules(q_lower, partner, mol_lookup),
         })
-    return {"ingredient": q.strip().lower(), "pairings": pairings}
+    return {"ingredient": q_lower, "pairings": pairings}
