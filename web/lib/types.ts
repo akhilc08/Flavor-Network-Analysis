@@ -17,6 +17,7 @@ export interface UncertainPair {
   ingredient_a: string
   ingredient_b: string
   score: number
+  uncertainty: number
   shared_molecules: string[]
 }
 
