@@ -39,7 +39,7 @@ Monorepo — everything added alongside existing Python code:
 │       ├── api.ts              # Typed API client
 │       └── types.ts            # Shared TypeScript types
 ├── api/                        # FastAPI app (NEW)
-│   ├── main.py                 # FastAPI app + Modal @web_endpoint
+│   ├── main.py                 # FastAPI app + Modal ASGI deployment
 │   └── routes/
 │       ├── search.py
 │       ├── rate.py
@@ -59,16 +59,20 @@ Monorepo — everything added alongside existing Python code:
 Browser → Next.js (Vercel) → FastAPI (Modal web endpoint)
                                       ↓
                          imports model/, scoring/, graph/
-                         loads ingredient_embeddings.pkl once at startup
+                         loads embeddings + scored pairs from Modal Volume
 ```
 
-FastAPI loads `ingredient_embeddings.pkl` and scored pair data once at startup (Modal container warm). Subsequent requests within the same container are fast in-memory lookups.
+FastAPI loads `ingredient_embeddings.pkl` and `scored_pairs.pkl` once at container startup from a Modal Volume (see Deployment section). Subsequent requests within the same warm container are fast in-memory lookups.
+
+### Shared Molecules
+
+`scored_pairs.pkl` does not contain `shared_molecules`. The FastAPI search and rate routes compute this at request time by joining against `data/processed/ingredient_molecule.parquet`: for a pair `(a, b)`, shared molecules = intersection of molecule sets for ingredient a and ingredient b, limited to 5 by name. This parquet file is also stored on the Modal Volume and loaded at startup.
 
 ---
 
 ## API Endpoints
 
-All endpoints served from FastAPI on a Modal `@web_endpoint`. Base URL stored in `NEXT_PUBLIC_API_URL` Vercel env var.
+All endpoints served from FastAPI on a Modal ASGI web endpoint. Base URL stored in `NEXT_PUBLIC_API_URL` Vercel env var. CORS is configured in `api/main.py` via `CORSMiddleware` allowing the Vercel origin.
 
 | Method | Route | Purpose |
 |--------|-------|---------|
@@ -79,7 +83,7 @@ All endpoints served from FastAPI on a Modal `@web_endpoint`. Base URL stored in
 | `POST` | `/recipe` | Stream Claude recipe generation (SSE) |
 | `GET` | `/health` | Liveness check, returns model AUC |
 
-### Response Shapes
+### Request / Response Shapes
 
 **`GET /search`**
 ```json
@@ -96,19 +100,7 @@ All endpoints served from FastAPI on a Modal `@web_endpoint`. Base URL stored in
   ]
 }
 ```
-
-**`GET /graph`**
-```json
-{
-  "nodes": [
-    { "id": "strawberry", "label": "strawberry", "size": 18, "center": true },
-    { "id": "miso", "label": "miso", "size": 12 }
-  ],
-  "edges": [
-    { "source": "strawberry", "target": "miso", "weight": 0.87, "label": "Surprising" }
-  ]
-}
-```
+`shared_molecules` sourced from `ingredient_molecule.parquet` intersection at request time (up to 5 molecule names). Returns `404` if ingredient not found in embeddings.
 
 **`GET /uncertain-pairs`**
 ```json
@@ -124,8 +116,45 @@ All endpoints served from FastAPI on a Modal `@web_endpoint`. Base URL stored in
   ]
 }
 ```
+`auc` sourced by reading `training_metadata.json` directly (`json.load`) — the same way `active_learning.is_active_learning_enabled()` reads it internally. Returns `403` if the file is absent OR if AUC < 0.70 (both conditions mean active learning is not enabled). The route calls `active_learning.get_uncertain_pairs(n=5)` to retrieve pairs. `shared_molecules` same lookup as search.
 
-**`POST /recipe`** — Server-Sent Events stream of Claude text chunks.
+**`POST /rate` — Request body**
+```json
+{
+  "ratings": [
+    { "ingredient_a": "anchovy", "ingredient_b": "chocolate", "rating": 3 },
+    { "ingredient_a": "coffee",  "ingredient_b": "cardamom",  "rating": 5 }
+  ]
+}
+```
+Response:
+```json
+{ "auc_before": 0.847, "auc_after": 0.861, "delta": 0.014 }
+```
+The route loops over the ratings list, calling `active_learning.submit_rating(ingredient_a, ingredient_b, rating)` for each pair (appends to `feedback.csv`), then calls `active_learning.fine_tune_with_replay()` for 10 epochs. Returns `auc_before` (read from `training_metadata.json` before fine-tune) and `auc_after` (read after) once complete (~30s).
+
+**`POST /recipe` — Request body**
+```json
+{
+  "ingredients": ["strawberry", "miso"],
+  "shared_molecules": ["furaneol", "ethyl acetate"],
+  "flavor_labels": { "strawberry × miso": "Surprising" }
+}
+```
+Response: Server-Sent Events stream. Each event is a text chunk from the Claude API stream. Frontend accumulates chunks and renders them in place. The "Flavor Science" block is part of the same streamed response — Claude is prompted to end with a `## Flavor Science` section.
+
+**`GET /graph`**
+```json
+{
+  "nodes": [
+    { "id": "strawberry", "label": "strawberry", "size": 18, "center": true },
+    { "id": "miso", "label": "miso", "size": 12 }
+  ],
+  "edges": [
+    { "source": "strawberry", "target": "miso", "weight": 0.87, "label": "Surprising" }
+  ]
+}
+```
 
 ---
 
@@ -141,40 +170,46 @@ All pages share the root layout (`web/app/layout.tsx`) which renders the sticky 
 ### Search (`/search`)
 - Text input with submit button; calls `GET /search` on submit
 - Results rendered as 2-column card grid
-- Each card: ingredient name, label pill (Surprising/Unexpected/Classic), surprise score bar (terracotta), pairing score bar (blue-grey), shared molecule tags (italic)
+- Each card: ingredient name, label pill (Surprising/Unexpected/Classic), pairing score bar (terracotta `#c4622a`), surprise score bar (green `#4a7c4e`), shared molecule tags (italic). Score bar colors match existing Streamlit implementation.
 
 ### Rate (`/rate`)
 - Fetches uncertain pairs from `GET /uncertain-pairs` on load
 - Displays current model AUC in top-right
-- Each pair: ingredient names × separator, shared molecules, 5-star input
-- Submit button: calls `POST /rate`, shows loading state (~30s fine-tune), then displays AUC delta
+- Each pair: ingredient names × separator, shared molecules, 5-star input (unrated = all empty stars)
+- Submit button: calls `POST /rate`, shows loading state with spinner (~30s), then displays AUC before/after delta
 
 ### Graph (`/graph`)
-- Left sidebar: center ingredient input, min score slider, max nodes slider, node/edge counts, legend
+- Left sidebar: center ingredient text input, min score slider, max nodes slider, node/edge counts, legend
 - Right panel: Sigma.js graph (WebGL canvas)
-- Click any node → re-fetches `GET /graph?center={clicked}` and re-renders (replaces PyVis dropdown)
+- Click any node → re-fetches `GET /graph?center={clicked}` and re-renders. This replaces the Streamlit dropdown — clicking is now the primary navigation mechanism.
 - Edge color: terracotta = Surprising, blue-grey = Expected/Classic
 
 ### Recipe (`/recipe`)
-- Ingredient selector: chips with remove button, "+ Add ingredient" trigger (searches via `GET /search`)
-- Shared molecules panel (shown when ≥2 ingredients selected)
-- Generate button: calls `POST /recipe`, streams response token-by-token into the recipe body
-- Flavor Science callout box rendered after streaming completes
+- Ingredient selector: selected ingredients shown as chips with remove (×) button
+- "+ Add ingredient" opens a dropdown populated from the top-surprise pairs already loaded in the session (not a live search call — matches existing Streamlit behavior)
+- Shared molecules panel shown when ≥2 ingredients selected (computed client-side from `/search` results already in state)
+- Generate button: calls `POST /recipe` with selected ingredients + precomputed shared molecules + labels, streams response into recipe body
+- Flavor Science callout box rendered when streaming completes (detected by `## Flavor Science` heading in stream)
 
 ---
 
 ## Visual Design System
 
-Ported directly from existing Streamlit theme. All values from `app/utils/theme.py`.
+Sourced directly from `app/utils/theme.py` and `.streamlit/config.toml`.
 
-| Token | Value |
-|-------|-------|
-| `--color-bg` | `#f5ede0` |
-| `--color-dark` | `#2d1b0e` |
-| `--color-accent` | `#c4622a` |
-| `--color-muted` | `#e8d5bc` |
-| `--color-blue` | `#8b9dc3` |
-| `--font-serif` | `Georgia, serif` |
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--color-bg` | `#fdf6ec` | Page background |
+| `--color-card` | `#fff8f0` | Card backgrounds |
+| `--color-dark` | `#2d1b0e` | Nav background, headings |
+| `--color-accent` | `#c4622a` | Primary accent, pairing score bars |
+| `--color-accent-light` | `#e8845a` | Score bar gradient end |
+| `--color-muted` | `#e8d5bc` | Borders, empty bar fills |
+| `--color-green` | `#4a7c4e` | Surprise score bars |
+| `--color-green-light` | `#6aab6e` | Surprise score bar gradient end |
+| `--color-blue` | `#8b9dc3` | Expected/Classic edge color |
+| `--color-gold` | `#b8860b` | "Unexpected" label pill text/border |
+| `--font-serif` | `Georgia, serif` | All body text and headings |
 
 CSS approach: Tailwind CSS with a custom theme extension for the earthy palette. Component-level styles for editorial-specific elements (hairline bars, molecule tags, label pills).
 
@@ -182,56 +217,87 @@ CSS approach: Tailwind CSS with a custom theme extension for the earthy palette.
 
 ## Deployment
 
+### Data Persistence — Modal Volume
+
+A Modal Volume named `flavornet-data` stores all runtime data files. This replaces local file mounts so files persist across container restarts and are updated after fine-tuning:
+
+```
+flavornet-data/
+├── ingredient_embeddings.pkl      # Updated after training
+├── scored_pairs.pkl               # Updated after scoring run
+├── ingredient_molecule.parquet    # Static (from data pipeline)
+├── training_metadata.json         # Updated after each fine-tune
+├── feedback.csv                   # Appended after each rating submission
+├── graph/hetero_data.pt           # Required by active_learning.py for fine-tuning
+├── model/checkpoints/best_model.pt # Required by active_learning.py for fine-tuning
+└── model/replay_buffer.pkl        # Required by active_learning.py for experience replay
+```
+
+All files must be present for `POST /rate` to execute fine-tuning. If `hetero_data.pt`, `best_model.pt`, or `replay_buffer.pkl` are absent, `fine_tune_with_replay()` will fail silently and return stale AUC values. Upload these on initial `modal deploy` alongside the embeddings.
+
+On `modal deploy`, the current local versions of these files are uploaded to the Volume. After a fine-tune cycle, `active_learning.py` writes updated embeddings and metadata directly to the Volume path.
+
 ### FastAPI on Modal
 
-`api/main.py` exposes the FastAPI app as a Modal `@web_endpoint`:
+`api/main.py` uses the current Modal ASGI pattern:
 
 ```python
 import modal
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = modal.App("flavornet-api")
-fastapi_app = FastAPI()
+volume = modal.Volume.from_name("flavornet-data")
 
-@app.function(
-    image=modal.Image.debian_slim().pip_install(...),
-    mounts=[modal.Mount.from_local_dir("model/embeddings", remote_path="/embeddings"),
-            modal.Mount.from_local_dir("scoring", remote_path="/scoring")],
+image = modal.Image.debian_slim().pip_install(
+    "fastapi", "torch", "torch-geometric", "pandas", "anthropic", ...
 )
+
+fastapi_app = FastAPI()
+fastapi_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://*.vercel.app", "http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.function(image=image, volumes={"/data": volume})
 @modal.asgi_app()
 def serve():
     return fastapi_app
 ```
 
+For SSE streaming on `POST /recipe`, use FastAPI's `StreamingResponse` with `media_type="text/event-stream"`. Modal ASGI endpoints support streaming responses natively — no additional configuration needed.
+
 Deploy: `modal deploy api/main.py`
 
 ### Next.js on Vercel
 
-- Deploy `web/` directory
+- Deploy `web/` directory (set root directory to `web/` in Vercel project settings)
 - Set `NEXT_PUBLIC_API_URL` to Modal endpoint URL
-- No special build config needed (standard Next.js App Router)
 
 ### Environment Variables
 
 | Variable | Where | Value |
 |----------|-------|-------|
 | `NEXT_PUBLIC_API_URL` | Vercel | Modal web endpoint URL |
-| `ANTHROPIC_API_KEY` | Modal secret | Claude API key (recipe generation) |
+| `ANTHROPIC_API_KEY` | Modal secret `flavornet-secrets` | Claude API key (recipe generation) |
 
 ---
 
 ## Error Handling
 
-- **Cold start**: Modal container takes ~2-3s on first request. Next.js shows a loading skeleton on all data-fetching pages. No special handling needed — the skeleton covers it.
-- **Search miss**: If ingredient not found in embeddings, API returns `404`. Frontend shows "Ingredient not found, try another name."
-- **Rate page AUC gate**: If model AUC < 0.70, `GET /uncertain-pairs` returns `403`. Frontend shows "Model needs more training data before active learning is available."
-- **Recipe stream error**: If Claude API fails mid-stream, frontend shows partial result + error notice.
+- **Cold start**: Modal container takes ~2-3s on first request. All data-fetching pages show a loading skeleton. No special handling needed beyond the skeleton.
+- **Search miss**: Ingredient not found in embeddings → API returns `404`. Frontend shows "Ingredient not found, try another name."
+- **Rate page AUC gate**: `GET /uncertain-pairs` returns `403` if `training_metadata.json` is absent OR AUC < 0.70. Frontend shows "Model needs more training data before active learning is available."
+- **Recipe stream error**: If Claude API fails mid-stream, frontend shows partial result + "Generation interrupted" notice.
+- **CORS**: Handled by `CORSMiddleware` in FastAPI. Vercel preview deploy URLs (`*.vercel.app`) are whitelisted.
 
 ---
 
 ## Out of Scope
 
 - Authentication / user accounts
-- Persisting ratings across users (feedback.csv stays local/Modal volume)
+- Persisting ratings across users (feedback.csv is per-deployment on Modal Volume)
 - Mobile-optimized graph view (Sigma.js works on mobile but layout not optimized)
 - Dark mode
