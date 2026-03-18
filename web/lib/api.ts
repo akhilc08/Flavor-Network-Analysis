@@ -47,8 +47,12 @@ export async function streamRecipe(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    if (!res.ok || !res.body) {
-      throw new Error('Recipe stream failed')
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(detail.detail ?? res.statusText)
+    }
+    if (!res.body) {
+      throw new Error('No response body')
     }
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
