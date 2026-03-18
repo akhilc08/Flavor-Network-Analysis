@@ -1,6 +1,5 @@
 """Modal deployment wrapper. Deploy with: modal deploy api/modal_app.py"""
 import modal
-from api.main import fastapi_app  # noqa: F401  imported for side-effects (route registration)
 
 app = modal.App("flavornet-api")
 volume = modal.Volume.from_name("flavornet-data")
@@ -17,6 +16,7 @@ image = (
         "scikit-learn",
         "numpy",
     )
+    .add_local_python_source("api", "scoring", "graph", "model")
 )
 
 
@@ -28,4 +28,5 @@ image = (
 )
 @modal.asgi_app()
 def serve():
+    from api.main import fastapi_app
     return fastapi_app

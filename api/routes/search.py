@@ -10,10 +10,11 @@ router = APIRouter()
 
 @router.get("/search")
 def search(q: str, limit: int = 10):
-    from scoring.score import get_top_pairings
     data = load_all_data()
     q_lower = q.strip().lower()
-    pairs = get_top_pairings(q_lower, n=limit)
+    df = data["scored_pairs"]
+    mask = (df["ingredient_a"] == q_lower) | (df["ingredient_b"] == q_lower)
+    pairs = df[mask].head(limit).to_dict(orient="records")
     if not pairs:
         raise HTTPException(status_code=404, detail=f"Ingredient '{q}' not found.")
     mol_lookup = data["mol_lookup"]

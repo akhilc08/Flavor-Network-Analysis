@@ -61,4 +61,5 @@ export interface RecipeRequest {
   ingredients: string[]
   shared_molecules: string[]
   flavor_labels: Record<string, string>
+  api_key?: string
 }

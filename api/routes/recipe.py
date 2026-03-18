@@ -16,6 +16,7 @@ class RecipeRequest(BaseModel):
     ingredients: list[str]
     shared_molecules: list[str]
     flavor_labels: dict[str, str]
+    api_key: str | None = None
 
     @field_validator("ingredients")
     @classmethod
@@ -44,9 +45,9 @@ Your recipe MUST:
 Be specific about the flavor compounds and write with confidence."""
 
 
-def _stream_recipe(prompt: str):
+def _stream_recipe(prompt: str, api_key: str):
     import anthropic
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    client = anthropic.Anthropic(api_key=api_key)
     with client.messages.stream(
         model="claude-sonnet-4-6",
         max_tokens=1500,
@@ -58,5 +59,9 @@ def _stream_recipe(prompt: str):
 
 @router.post("/recipe")
 def recipe(req: RecipeRequest):
+    key = req.api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+    if not key:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="No API key provided.")
     prompt = _build_prompt(req)
-    return StreamingResponse(_stream_recipe(prompt), media_type="text/event-stream")
+    return StreamingResponse(_stream_recipe(prompt, key), media_type="text/event-stream")

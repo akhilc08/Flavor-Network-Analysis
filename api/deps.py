@@ -17,16 +17,30 @@ def load_all_data() -> dict:
     with open(DATA_DIR / "ingredient_embeddings.pkl", "rb") as f:
         embeddings = pickle.load(f)
 
-    with open(DATA_DIR / "scored_pairs.pkl", "rb") as f:
-        scored_pairs = pickle.load(f)
+    # Build ID -> lowercase name mapping from ingredients.parquet
+    ingredients_df = pd.read_parquet(DATA_DIR / "ingredients.parquet")[["ingredient_id", "name"]]
+    id_to_name: dict[int, str] = {
+        int(row["ingredient_id"]): str(row["name"]).lower()
+        for _, row in ingredients_df.iterrows()
+    }
 
+    scored_pairs = pd.read_pickle(DATA_DIR / "scored_pairs.pkl")
+    if "label" in scored_pairs.columns:
+        scored_pairs["label"] = scored_pairs["label"].astype(str)
+    # Replace numeric IDs with string names
+    scored_pairs["ingredient_a"] = scored_pairs["ingredient_a"].map(id_to_name)
+    scored_pairs["ingredient_b"] = scored_pairs["ingredient_b"].map(id_to_name)
+    scored_pairs = scored_pairs.dropna(subset=["ingredient_a", "ingredient_b"])
+
+    # Build lookup: ingredient_name -> set of pubchem_ids (as strings)
     molecules_df = pd.read_parquet(DATA_DIR / "ingredient_molecule.parquet")
-    # Build lookup: ingredient_name -> set of molecule names
     mol_lookup: dict[str, set[str]] = {}
     for _, row in molecules_df.iterrows():
-        name = str(row.get("ingredient", row.get("name", ""))).lower()
-        mol = str(row.get("molecule", row.get("molecule_name", "")))
-        mol_lookup.setdefault(name, set()).add(mol)
+        ing_id = int(row["ingredient_id"])
+        name = id_to_name.get(ing_id, "")
+        if name:
+            mol = str(int(row["pubchem_id"]))
+            mol_lookup.setdefault(name, set()).add(mol)
 
     return {
         "embeddings": embeddings,

@@ -4,19 +4,31 @@ import json
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 fastapi_app = FastAPI(title="FlavorNet API")
 
-fastapi_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://*.vercel.app", "http://localhost:3000"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+class ForceCORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.method == "OPTIONS":
+            response = JSONResponse({}, status_code=200)
+        else:
+            try:
+                response = await call_next(request)
+            except Exception as exc:
+                response = JSONResponse({"detail": str(exc)}, status_code=500)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
+
+fastapi_app.add_middleware(ForceCORSMiddleware)
 
 
 @fastapi_app.get("/health")
