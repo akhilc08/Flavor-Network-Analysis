@@ -62,7 +62,7 @@ export default function FlavorGraph({
     <SigmaContainer
       graph={Graph}
       style={{ width: '100%', height: '500px' }}
-      settings={{ renderEdgeLabels: true, defaultEdgeType: 'line' }}
+      settings={{ renderEdgeLabels: false, defaultEdgeType: 'line' }}
     >
       <GraphLoader data={data} />
       <NodeClickHandler onNodeClick={onNodeClick} />

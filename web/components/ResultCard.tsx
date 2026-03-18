@@ -1,6 +1,5 @@
 import type { Pairing } from '@/lib/types'
 import ScoreBar from './ScoreBar'
-import LabelPill from './LabelPill'
 import MoleculeTag from './MoleculeTag'
 
 function whyItWorks(molecules: string[]): string {
@@ -19,9 +18,6 @@ export default function ResultCard({ pairing }: { pairing: Pairing }) {
         <h3 className="font-serif text-[26px] font-normal text-dark leading-[1.15]">
           {pairing.name.charAt(0).toUpperCase() + pairing.name.slice(1)}
         </h3>
-        <div className="mt-1 flex-shrink-0">
-          <LabelPill label={pairing.label} />
-        </div>
       </div>
 
       {/* Score bars */}
