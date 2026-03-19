@@ -24,22 +24,31 @@ LOCAL_FILES = [
 
 
 @app.function(volumes={"/data": volume})
-def upload():
-    import shutil
-    import os
-    for local_path, volume_path in LOCAL_FILES:
-        src = Path(local_path)
-        if not src.exists():
-            print(f"  SKIP (not found): {local_path}")
-            continue
+def upload(files: dict[str, bytes]):
+    """Write pre-read file bytes into the volume."""
+    for volume_path, data in files.items():
         dst = Path("/data") / volume_path
         dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dst)
-        print(f"  OK: {local_path} -> /data/{volume_path}")
+        dst.write_bytes(data)
+        print(f"  OK: /data/{volume_path} ({len(data) / 1e6:.1f} MB)")
     volume.commit()
     print("Volume committed.")
 
 
 @app.local_entrypoint()
 def main():
-    upload.remote()
+    # Read files locally before sending to the remote container
+    files: dict[str, bytes] = {}
+    for local_path, volume_path in LOCAL_FILES:
+        src = Path(local_path)
+        if not src.exists():
+            print(f"  SKIP (not found): {local_path}")
+            continue
+        files[volume_path] = src.read_bytes()
+        print(f"  Read: {local_path} ({len(files[volume_path]) / 1e6:.1f} MB)")
+
+    if not files:
+        print("No files to upload.")
+        return
+
+    upload.remote(files)
