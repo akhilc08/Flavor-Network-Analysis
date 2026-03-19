@@ -29,6 +29,6 @@ def search(q: str, limit: int = 10):
             "pairing_score": round(float(p.get("pairing_score", 0)), 4),
             "surprise_score": round(float(p.get("surprise_score", 0)), 4),
             "label": p.get("label", "Classic"),
-            "shared_molecules": get_shared_molecules(q_lower, partner, mol_lookup),
+            "shared_molecules": get_shared_molecules(q_lower, partner, mol_lookup, pubchem_to_name=data.get("pubchem_to_name")),
         })
     return {"ingredient": q_lower, "pairings": pairings}

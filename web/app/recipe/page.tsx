@@ -35,12 +35,10 @@ export default function RecipePage() {
     if (generating) return
     if (selected.length < 2) {
       setError('Select at least 2 ingredients first.')
-      setTab('ingredients')
       return
     }
     if (!apiKey.trim()) {
-      setError('No valid API key provided. Add your Anthropic API key in the API Key tab.')
-      setTab('api-key')
+      setError('No API key provided. Go to the API Key tab and enter your Anthropic key.')
       return
     }
     setGenerating(true)
@@ -58,7 +56,27 @@ export default function RecipePage() {
 
   return (
     <div className="min-h-screen bg-bg py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+      {/* Error banner — fixed at top so it's always visible */}
+      {error && (
+        <div
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+            backgroundColor: '#b91c1c', color: '#fff',
+            padding: '12px 24px', textAlign: 'center',
+            fontSize: '14px', fontFamily: 'system-ui, sans-serif',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          }}
+        >
+          {error}
+          <button
+            onClick={() => setError(null)}
+            style={{ marginLeft: 16, opacity: 0.8, fontWeight: 'bold' }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      <div className="max-w-2xl mx-auto" style={error ? { paddingTop: 48 } : {}}>
         <h1 className="font-serif text-3xl text-dark mb-2">Recipe Generator</h1>
         <p className="text-muted font-serif mb-8">Select 2–6 ingredients to generate a molecularly-paired recipe</p>
 
@@ -183,16 +201,9 @@ export default function RecipePage() {
           </section>
         )}
 
-        {/* Error */}
-        {error && (
-          <div className="mb-4 p-4 bg-card border border-red-300 rounded-lg text-sm font-sans text-red-700">
-            {error}
-          </div>
-        )}
-
         {tab === 'api-key' ? (
           <button
-            onClick={() => { setError(null); setTab('ingredients') }}
+            onClick={() => setTab('ingredients')}
             className="w-full py-3 rounded-lg font-sans text-base bg-accent text-bg hover:bg-accent/90 cursor-pointer transition-colors"
           >
             Save API Key

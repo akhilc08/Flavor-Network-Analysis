@@ -22,7 +22,6 @@ export default function ResultCard({ pairing }: { pairing: Pairing }) {
 
       {/* Score bars */}
       <ScoreBar label="Pairing Score" value={pairing.pairing_score} variant="pairing" />
-      <ScoreBar label="Surprise Score" value={pairing.surprise_score} variant="surprise" />
 
       {/* Molecules */}
       <div className="flex flex-wrap gap-1.5">

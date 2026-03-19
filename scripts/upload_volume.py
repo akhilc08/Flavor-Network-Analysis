@@ -19,6 +19,7 @@ LOCAL_FILES = [
     ("data/processed/val_edges.pt", "graph/val_edges.pt"),
     ("model/checkpoints/best_model.pt", "model/checkpoints/best_model.pt"),
     ("model/replay_buffer.pkl", "model/replay_buffer.pkl"),
+    ("data/raw/molecules.csv", "molecules.csv"),
 ]
 
 
