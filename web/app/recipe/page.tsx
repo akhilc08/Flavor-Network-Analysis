@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { streamRecipe, listIngredients } from '@/lib/api'
+import { streamRecipe } from '@/lib/api'
+import { ALL_INGREDIENTS } from '@/lib/ingredients'
 
 const MAX_SELECTED = 6
 type Tab = 'ingredients' | 'api-key'
@@ -10,7 +11,6 @@ type Tab = 'ingredients' | 'api-key'
 export default function RecipePage() {
   const [tab, setTab] = useState<Tab>('ingredients')
   const [selected, setSelected] = useState<string[]>([])
-  const [allIngredients, setAllIngredients] = useState<string[]>([])
   const [query, setQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -23,13 +23,9 @@ export default function RecipePage() {
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
 
-  useEffect(() => {
-    listIngredients().then(setAllIngredients).catch(() => {})
-  }, [])
-
   const filtered = query.trim().length === 0
     ? []
-    : allIngredients
+    : ALL_INGREDIENTS
         .filter(i => !selected.includes(i) && i.includes(query.trim().toLowerCase()))
         .slice(0, 10)
 

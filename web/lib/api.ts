@@ -9,11 +9,6 @@ async function get<T>(path: string): Promise<T> {
   return res.json()
 }
 
-export async function listIngredients(): Promise<string[]> {
-  const data = await get<{ ingredients: string[] }>('/ingredients')
-  return data.ingredients
-}
-
 export async function searchIngredient(q: string, limit = 10) {
   return get<import('./types').SearchResponse>(
     `/search?q=${encodeURIComponent(q)}&limit=${limit}`
