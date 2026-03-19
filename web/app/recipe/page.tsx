@@ -1,14 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { streamRecipe } from '@/lib/api'
-
-const INGREDIENTS = [
-  'vanilla', 'coffee', 'chocolate', 'strawberry', 'lemon', 'cinnamon',
-  'butter', 'cream', 'honey', 'cardamom', 'rose', 'ginger',
-  'orange', 'almond', 'coconut', 'caramel',
-]
+import { streamRecipe, listIngredients } from '@/lib/api'
 
 const MAX_SELECTED = 6
 type Tab = 'ingredients' | 'api-key'
@@ -16,6 +10,12 @@ type Tab = 'ingredients' | 'api-key'
 export default function RecipePage() {
   const [tab, setTab] = useState<Tab>('ingredients')
   const [selected, setSelected] = useState<string[]>([])
+  const [allIngredients, setAllIngredients] = useState<string[]>([])
+  const [query, setQuery] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const [apiKey, setApiKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [recipe, setRecipe] = useState('')
@@ -23,16 +23,46 @@ export default function RecipePage() {
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
 
+  useEffect(() => {
+    listIngredients().then(setAllIngredients).catch(() => {})
+  }, [])
+
+  const filtered = query.trim().length === 0
+    ? []
+    : allIngredients
+        .filter(i => !selected.includes(i) && i.includes(query.trim().toLowerCase()))
+        .slice(0, 10)
+
   function addIngredient(ingredient: string) {
     if (!ingredient) return
     setSelected(prev => {
       if (prev.includes(ingredient) || prev.length >= MAX_SELECTED) return prev
       return [...prev, ingredient]
     })
+    setQuery('')
+    setShowDropdown(false)
+    setActiveIndex(-1)
+    inputRef.current?.focus()
   }
 
   function removeIngredient(ingredient: string) {
     setSelected(prev => prev.filter(i => i !== ingredient))
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!showDropdown || filtered.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex(i => Math.min(i + 1, filtered.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex(i => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault()
+      addIngredient(filtered[activeIndex])
+    } else if (e.key === 'Escape') {
+      setShowDropdown(false)
+    }
   }
 
   async function handleGenerate() {
@@ -120,21 +150,45 @@ export default function RecipePage() {
               <h2 className="font-serif text-lg text-dark">Select Ingredients</h2>
               <span className="text-sm text-muted font-sans">{selected.length}/{MAX_SELECTED} selected</span>
             </div>
-            <select
-              value=""
-              onChange={e => { addIngredient(e.target.value); e.target.value = '' }}
-              disabled={selected.length >= MAX_SELECTED}
-              className="w-full px-3 py-2.5 rounded-lg border border-[#e8d5bc] bg-bg font-sans text-sm text-dark focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-            >
-              <option value="">
-                {selected.length >= MAX_SELECTED ? 'Maximum ingredients selected' : 'Add an ingredient…'}
-              </option>
-              {INGREDIENTS.filter(i => !selected.includes(i)).sort().map(ingredient => (
-                <option key={ingredient} value={ingredient} className="capitalize">
-                  {ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}
-                </option>
-              ))}
-            </select>
+            {/* Combobox */}
+            <div className="relative mb-4">
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={e => { setQuery(e.target.value); setShowDropdown(true); setActiveIndex(-1) }}
+                onFocus={() => { if (query) setShowDropdown(true) }}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                onKeyDown={handleKeyDown}
+                disabled={selected.length >= MAX_SELECTED}
+                placeholder={selected.length >= MAX_SELECTED ? 'Maximum ingredients selected' : 'Search ingredients…'}
+                className="w-full px-3 py-2.5 rounded-lg border border-[#e8d5bc] bg-bg font-sans text-sm text-dark placeholder-muted focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              {showDropdown && filtered.length > 0 && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute z-10 mt-1 w-full bg-card border border-[#e8d5bc] rounded-lg shadow-md overflow-hidden"
+                >
+                  {filtered.map((ingredient, i) => (
+                    <button
+                      key={ingredient}
+                      onMouseDown={() => addIngredient(ingredient)}
+                      className={[
+                        'w-full text-left px-4 py-2 text-sm font-sans capitalize transition-colors',
+                        i === activeIndex ? 'bg-accent text-bg' : 'text-dark hover:bg-[#f5ece0]',
+                      ].join(' ')}
+                    >
+                      {ingredient}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {showDropdown && query.trim().length > 0 && filtered.length === 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-card border border-[#e8d5bc] rounded-lg shadow-md px-4 py-2 text-sm text-muted font-sans">
+                  No ingredients found
+                </div>
+              )}
+            </div>
 
             {selected.length > 0 ? (
               <div className="flex flex-wrap gap-2">

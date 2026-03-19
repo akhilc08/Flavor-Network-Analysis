@@ -8,6 +8,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 router = APIRouter()
 
 
+@router.get("/ingredients")
+def list_ingredients():
+    data = load_all_data()
+    df = data["scored_pairs"]
+    all_ingredients = sorted(set(df["ingredient_a"].tolist() + df["ingredient_b"].tolist()))
+    return {"ingredients": all_ingredients}
+
+
 @router.get("/search")
 def search(q: str, limit: int = 10):
     data = load_all_data()
