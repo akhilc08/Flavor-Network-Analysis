@@ -23,12 +23,16 @@ export default function RecipePage() {
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
 
-  function toggle(ingredient: string) {
+  function addIngredient(ingredient: string) {
+    if (!ingredient) return
     setSelected(prev => {
-      if (prev.includes(ingredient)) return prev.filter(i => i !== ingredient)
-      if (prev.length >= MAX_SELECTED) return prev
+      if (prev.includes(ingredient) || prev.length >= MAX_SELECTED) return prev
       return [...prev, ingredient]
     })
+  }
+
+  function removeIngredient(ingredient: string) {
+    setSelected(prev => prev.filter(i => i !== ingredient))
   }
 
   async function handleGenerate() {
@@ -116,26 +120,43 @@ export default function RecipePage() {
               <h2 className="font-serif text-lg text-dark">Select Ingredients</h2>
               <span className="text-sm text-muted font-sans">{selected.length}/{MAX_SELECTED} selected</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {INGREDIENTS.map(ingredient => {
-                const isSelected = selected.includes(ingredient)
-                return (
-                  <button
+            <select
+              value=""
+              onChange={e => { addIngredient(e.target.value); e.target.value = '' }}
+              disabled={selected.length >= MAX_SELECTED}
+              className="w-full px-3 py-2.5 rounded-lg border border-[#e8d5bc] bg-bg font-sans text-sm text-dark focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+            >
+              <option value="">
+                {selected.length >= MAX_SELECTED ? 'Maximum ingredients selected' : 'Add an ingredient…'}
+              </option>
+              {INGREDIENTS.filter(i => !selected.includes(i)).sort().map(ingredient => (
+                <option key={ingredient} value={ingredient} className="capitalize">
+                  {ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}
+                </option>
+              ))}
+            </select>
+
+            {selected.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {selected.map(ingredient => (
+                  <span
                     key={ingredient}
-                    onClick={() => toggle(ingredient)}
-                    aria-pressed={isSelected}
-                    className={[
-                      'px-4 py-1.5 rounded-full text-sm font-sans capitalize transition-colors',
-                      isSelected
-                        ? 'bg-accent text-bg'
-                        : 'bg-card border border-[#e8d5bc] text-dark hover:border-accent hover:text-accent',
-                    ].join(' ')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-sans capitalize bg-accent text-bg"
                   >
                     {ingredient}
-                  </button>
-                )
-              })}
-            </div>
+                    <button
+                      onClick={() => removeIngredient(ingredient)}
+                      aria-label={`Remove ${ingredient}`}
+                      className="hover:opacity-70 transition-opacity leading-none"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted font-sans">No ingredients selected yet.</p>
+            )}
           </section>
         )}
 
