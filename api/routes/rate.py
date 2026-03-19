@@ -19,14 +19,17 @@ def uncertain_pairs():
     with open(METADATA_PATH) as f:
         auc = json.load(f).get("best_val_auc", 0.0)
 
+    import random
     data = load_all_data()
     mol_lookup = data["mol_lookup"]
     df = data["scored_pairs"]  # already has string names from deps.py
     records = df.to_dict(orient="records")
-    # Most uncertain = pairing_score closest to 0.5
+    # Take top 100 most uncertain, then randomly sample 5 so results vary each call
     records.sort(key=lambda p: abs(float(p.get("pairing_score", 0.5)) - 0.5))
+    pool = records[:100]
+    sample = random.sample(pool, min(5, len(pool)))
     pairs = []
-    for p in records[:5]:
+    for p in sample:
         a, b = str(p.get("ingredient_a", "")), str(p.get("ingredient_b", ""))
         score = float(p.get("pairing_score", 0.5))
         pairs.append({
