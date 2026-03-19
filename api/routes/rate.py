@@ -35,7 +35,7 @@ def uncertain_pairs():
             "ingredient_b": b,
             "score": round(score, 4),
             "uncertainty": round(abs(score - 0.5), 4),
-            "shared_molecules": get_shared_molecules(a, b, mol_lookup),
+            "shared_molecules": get_shared_molecules(a, b, mol_lookup, pubchem_to_name=data.get("pubchem_to_name")),
         })
     return {"auc": round(float(auc), 4), "pairs": pairs}
 
