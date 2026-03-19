@@ -26,7 +26,7 @@ export default function RecipePage() {
   const filtered = query.trim().length === 0
     ? []
     : ALL_INGREDIENTS
-        .filter(i => !selected.includes(i) && i.includes(query.trim().toLowerCase()))
+        .filter(i => !selected.includes(i) && i.toLowerCase().includes(query.trim().toLowerCase()))
         .slice(0, 10)
 
   function addIngredient(ingredient: string) {
