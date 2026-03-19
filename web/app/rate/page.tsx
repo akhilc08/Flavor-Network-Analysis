@@ -60,10 +60,6 @@ export default function RatePage() {
     }
   }
 
-  const deltaPositive = result && result.delta >= 0
-  const deltaFormatted = result
-    ? `${result.delta >= 0 ? '+' : ''}${result.delta.toFixed(4)}`
-    : ''
 
   return (
     <>
