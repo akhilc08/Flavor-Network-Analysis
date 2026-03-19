@@ -11,6 +11,9 @@ data/raw/flavordb_cache.sqlite
 # Generated graph artifacts (large binary)
 graph/hetero_data.pt
 
+# User feedback data (runtime artifact, not source)
+feedback.csv
+
 # macOS metadata
 .DS_Store
 

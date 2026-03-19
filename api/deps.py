@@ -27,9 +27,15 @@ def load_all_data() -> dict:
     scored_pairs = pd.read_pickle(DATA_DIR / "scored_pairs.pkl")
     if "label" in scored_pairs.columns:
         scored_pairs["label"] = scored_pairs["label"].astype(str)
-    # Replace numeric IDs with string names
-    scored_pairs["ingredient_a"] = scored_pairs["ingredient_a"].map(id_to_name)
-    scored_pairs["ingredient_b"] = scored_pairs["ingredient_b"].map(id_to_name)
+    # Replace numeric IDs with string names only if the column holds integers.
+    # (compute_all_pairs may store string names directly when embeddings keys are names.)
+    if pd.api.types.is_integer_dtype(scored_pairs["ingredient_a"]):
+        scored_pairs["ingredient_a"] = scored_pairs["ingredient_a"].map(id_to_name)
+        scored_pairs["ingredient_b"] = scored_pairs["ingredient_b"].map(id_to_name)
+    else:
+        # Already string names — normalise to lowercase to match id_to_name values
+        scored_pairs["ingredient_a"] = scored_pairs["ingredient_a"].str.lower()
+        scored_pairs["ingredient_b"] = scored_pairs["ingredient_b"].str.lower()
     scored_pairs = scored_pairs.dropna(subset=["ingredient_a", "ingredient_b"])
 
     # Build pubchem_id -> common_name lookup from molecules.csv
