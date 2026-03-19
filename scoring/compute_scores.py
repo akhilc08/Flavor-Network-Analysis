@@ -28,6 +28,7 @@ GRAPH_PATH = Path("graph/hetero_data.pt")
 SCORED_PAIRS_PATH = Path("scoring/scored_pairs.pkl")
 
 # Handlers are set up here (entry-point module); scoring/score.py does NOT configure handlers.
+Path("logs").mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
