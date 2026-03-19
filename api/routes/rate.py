@@ -28,10 +28,13 @@ def uncertain_pairs():
     pairs = []
     for p in records[:5]:
         a, b = str(p.get("ingredient_a", "")), str(p.get("ingredient_b", ""))
+        score = float(p.get("pairing_score", 0.5))
         pairs.append({
+            "pair_id": f"{a}___{b}",
             "ingredient_a": a,
             "ingredient_b": b,
-            "score": round(float(p.get("pairing_score", 0.5)), 4),
+            "score": round(score, 4),
+            "uncertainty": round(abs(score - 0.5), 4),
             "shared_molecules": get_shared_molecules(a, b, mol_lookup),
         })
     return {"auc": round(float(auc), 4), "pairs": pairs}
