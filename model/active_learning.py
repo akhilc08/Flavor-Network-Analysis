@@ -387,7 +387,13 @@ def get_uncertain_pairs(n: int = 5) -> list[dict]:
     scored_pairs_path = _Path("/data/scored_pairs.pkl")
     try:
         with open(scored_pairs_path, "rb") as f:
-            pairs = pickle.load(f)
+            raw = pickle.load(f)
+        # scored_pairs.pkl is a DataFrame — convert to list of dicts
+        import pandas as _pd
+        if isinstance(raw, _pd.DataFrame):
+            pairs = raw.to_dict(orient="records")
+        else:
+            pairs = list(raw)
     except Exception as exc:
         logger.warning("get_uncertain_pairs: could not load scored_pairs.pkl: %s", exc)
         return []
