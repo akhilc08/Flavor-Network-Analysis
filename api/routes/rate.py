@@ -19,13 +19,15 @@ def uncertain_pairs():
     with open(METADATA_PATH) as f:
         auc = json.load(f).get("best_val_auc", 0.0)
 
-    from model.active_learning import get_uncertain_pairs
-    raw = get_uncertain_pairs(n=5)
     data = load_all_data()
     mol_lookup = data["mol_lookup"]
+    df = data["scored_pairs"]  # already has string names from deps.py
+    records = df.to_dict(orient="records")
+    # Most uncertain = pairing_score closest to 0.5
+    records.sort(key=lambda p: abs(float(p.get("pairing_score", 0.5)) - 0.5))
     pairs = []
-    for p in raw:
-        a, b = p.get("ingredient_a", ""), p.get("ingredient_b", "")
+    for p in records[:5]:
+        a, b = str(p.get("ingredient_a", "")), str(p.get("ingredient_b", ""))
         pairs.append({
             "ingredient_a": a,
             "ingredient_b": b,
