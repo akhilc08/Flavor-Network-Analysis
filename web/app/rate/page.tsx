@@ -91,33 +91,11 @@ export default function RatePage() {
 
       {/* Result panel */}
       {result && !loading && (
-        <div className="bg-card border border-[#e8d5bc] rounded-xl p-8 flex flex-col gap-6 mb-8">
-          <h2 className="font-serif text-[24px] font-normal text-dark">Model Updated</h2>
-          <div className="flex flex-col gap-3">
-            <div className="flex justify-between items-baseline border-b border-muted pb-3">
-              <span className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-warm-mid">
-                AUC Before
-              </span>
-              <span className="font-serif text-[18px] text-dark">{result.auc_before.toFixed(4)}</span>
-            </div>
-            <div className="flex justify-between items-baseline border-b border-muted pb-3">
-              <span className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-warm-mid">
-                AUC After
-              </span>
-              <span className="font-serif text-[18px] text-dark">{result.auc_after.toFixed(4)}</span>
-            </div>
-            <div className="flex justify-between items-baseline">
-              <span className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-warm-mid">
-                Delta
-              </span>
-              <span
-                className="font-serif text-[18px] font-semibold"
-                style={{ color: deltaPositive ? '#4a7c4e' : '#b94a4a' }}
-              >
-                {deltaFormatted}
-              </span>
-            </div>
-          </div>
+        <div className="bg-card border border-[#e8d5bc] rounded-xl p-8 flex flex-col gap-4 mb-8">
+          <h2 className="font-serif text-[24px] font-normal text-dark">Ratings submitted</h2>
+          <p className="font-sans text-[13px] text-warm-mid">
+            Thank you — your feedback helps improve the recommendation model.
+          </p>
           <button
             type="button"
             onClick={fetchPairs}

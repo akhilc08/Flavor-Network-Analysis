@@ -18,9 +18,6 @@ export default function PairCard({ pair, rating, onRate }: PairCardProps) {
           <span className="text-warm-mid font-sans text-[18px]">+</span>{' '}
           {pair.ingredient_b}
         </p>
-        <p className="font-sans text-[12px] text-warm-mid tracking-[0.02em]">
-          pairing score: {pair.score.toFixed(2)}
-        </p>
       </div>
 
       {/* Molecule tags */}
