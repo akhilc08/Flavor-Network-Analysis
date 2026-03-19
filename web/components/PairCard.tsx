@@ -19,7 +19,7 @@ export default function PairCard({ pair, rating, onRate }: PairCardProps) {
           {pair.ingredient_b}
         </p>
         <p className="font-sans text-[12px] text-warm-mid tracking-[0.02em]">
-          uncertainty: {pair.uncertainty.toFixed(2)}
+          pairing score: {pair.score.toFixed(2)}
         </p>
       </div>
 
