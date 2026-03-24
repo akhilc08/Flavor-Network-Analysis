@@ -10,7 +10,7 @@ interface PairCardProps {
 
 export default function PairCard({ pair, rating, onRate }: PairCardProps) {
   return (
-    <div className="bg-card rounded-xl border border-[#e8d5bc] p-6 flex flex-col gap-4">
+    <div className="bg-card rounded border border-muted p-6 flex flex-col gap-4">
       {/* Ingredient names */}
       <div className="flex flex-col gap-1">
         <p className="font-serif text-[22px] font-normal text-dark">

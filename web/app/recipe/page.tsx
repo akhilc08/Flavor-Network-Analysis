@@ -85,67 +85,53 @@ export default function RecipePage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg py-12 px-4">
-      {/* Error banner — fixed at top so it's always visible */}
-      {error && (
-        <div
-          style={{
-            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-            backgroundColor: '#b91c1c', color: '#fff',
-            padding: '12px 24px', textAlign: 'center',
-            fontSize: '14px', fontFamily: 'system-ui, sans-serif',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-          }}
-        >
-          {error}
-          <button
-            onClick={() => setError(null)}
-            style={{ marginLeft: 16, opacity: 0.8, fontWeight: 'bold' }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-      <div className="max-w-2xl mx-auto" style={error ? { paddingTop: 48 } : {}}>
-        <h1 className="font-serif text-3xl text-dark mb-2">Recipe Generator</h1>
-        <p className="text-muted font-serif mb-8">Select 2–6 ingredients to generate a molecularly-paired recipe</p>
+    <>
+      {/* Page header */}
+      <div className="mb-8">
+        <h1 className="font-serif text-[32px] font-normal text-dark mb-1">Recipe Generator</h1>
+        <p className="font-sans text-[13px] text-warm-mid tracking-[0.02em]">
+          Select 2–6 ingredients &middot; AI-generated molecular recipe
+        </p>
+      </div>
 
+      <div className="max-w-2xl">
         {/* Tab bar */}
-        <div className="flex border-b border-[#e8d5bc] mb-6">
+        <div className="flex border-b border-muted mb-6">
           <button
             onClick={() => setTab('ingredients')}
             className={[
-              'px-5 py-2.5 text-sm font-sans -mb-px border-b-2 transition-colors',
-              tab === 'ingredients' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-dark',
+              'px-5 py-2.5 font-sans text-[10px] font-bold tracking-[0.12em] uppercase -mb-px border-b-2 transition-colors duration-150',
+              tab === 'ingredients' ? 'border-accent text-accent' : 'border-transparent text-warm-mid hover:text-dark',
             ].join(' ')}
           >
             Ingredients
             {selected.length > 0 && (
-              <span className="ml-1.5 text-xs bg-accent text-bg rounded-full px-1.5 py-0.5">{selected.length}</span>
+              <span className="ml-2 font-sans text-[10px] bg-accent text-bg rounded-sm px-1.5 py-0.5">{selected.length}</span>
             )}
           </button>
           <button
             onClick={() => setTab('api-key')}
             className={[
-              'px-5 py-2.5 text-sm font-sans -mb-px border-b-2 transition-colors flex items-center gap-1.5',
-              tab === 'api-key' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-dark',
+              'px-5 py-2.5 font-sans text-[10px] font-bold tracking-[0.12em] uppercase -mb-px border-b-2 transition-colors duration-150 flex items-center gap-1.5',
+              tab === 'api-key' ? 'border-accent text-accent' : 'border-transparent text-warm-mid hover:text-dark',
             ].join(' ')}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
             API Key
-            <span className={`w-1.5 h-1.5 rounded-full ${apiKey.trim() ? 'bg-green-500' : 'bg-red-400'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${apiKey.trim() ? 'bg-green' : 'bg-warm-light'}`} />
           </button>
         </div>
 
         {/* Ingredients tab */}
         {tab === 'ingredients' && (
-          <section className="bg-card border border-[#e8d5bc] rounded-lg p-6 mb-6">
+          <section className="bg-card border border-muted rounded p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-serif text-lg text-dark">Select Ingredients</h2>
-              <span className="text-sm text-muted font-sans">{selected.length}/{MAX_SELECTED} selected</span>
+              <h2 className="font-serif text-[22px] font-normal text-dark">Select Ingredients</h2>
+              <span className="font-sans text-[11px] text-warm-mid tracking-[0.04em]">{selected.length}/{MAX_SELECTED}</span>
             </div>
+
             {/* Combobox */}
             <div className="relative mb-4">
               <input
@@ -158,20 +144,20 @@ export default function RecipePage() {
                 onKeyDown={handleKeyDown}
                 disabled={selected.length >= MAX_SELECTED}
                 placeholder={selected.length >= MAX_SELECTED ? 'Maximum ingredients selected' : 'Search ingredients…'}
-                className="w-full px-3 py-2.5 rounded-lg border border-[#e8d5bc] bg-bg font-sans text-sm text-dark placeholder-muted focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full font-serif text-base text-dark bg-bg border-[1.5px] border-muted rounded px-3.5 py-2.5 outline-none transition-all duration-150 focus:border-accent focus:shadow-[0_0_0_2px_rgba(196,98,42,0.12)] placeholder:text-warm-light disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {showDropdown && filtered.length > 0 && (
                 <div
                   ref={dropdownRef}
-                  className="absolute z-10 mt-1 w-full bg-card border border-[#e8d5bc] rounded-lg shadow-md overflow-hidden"
+                  className="absolute z-10 mt-1 w-full bg-card border border-muted rounded shadow-card-hover overflow-hidden"
                 >
                   {filtered.map((ingredient, i) => (
                     <button
                       key={ingredient}
                       onMouseDown={() => addIngredient(ingredient)}
                       className={[
-                        'w-full text-left px-4 py-2 text-sm font-sans capitalize transition-colors',
-                        i === activeIndex ? 'bg-accent text-bg' : 'text-dark hover:bg-[#f5ece0]',
+                        'w-full text-left px-4 py-2 font-serif text-[14px] capitalize transition-colors duration-150',
+                        i === activeIndex ? 'bg-accent text-bg' : 'text-dark hover:bg-bg',
                       ].join(' ')}
                     >
                       {ingredient}
@@ -180,7 +166,7 @@ export default function RecipePage() {
                 </div>
               )}
               {showDropdown && query.trim().length > 0 && filtered.length === 0 && (
-                <div className="absolute z-10 mt-1 w-full bg-card border border-[#e8d5bc] rounded-lg shadow-md px-4 py-2 text-sm text-muted font-sans">
+                <div className="absolute z-10 mt-1 w-full bg-card border border-muted rounded shadow-card px-4 py-2 font-serif text-[14px] italic text-warm-mid">
                   No ingredients found
                 </div>
               )}
@@ -191,13 +177,13 @@ export default function RecipePage() {
                 {selected.map(ingredient => (
                   <span
                     key={ingredient}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-sans capitalize bg-accent text-bg"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm font-sans text-[11px] font-semibold tracking-[0.06em] uppercase capitalize bg-accent/10 text-accent border border-accent/25"
                   >
                     {ingredient}
                     <button
                       onClick={() => removeIngredient(ingredient)}
                       aria-label={`Remove ${ingredient}`}
-                      className="hover:opacity-70 transition-opacity leading-none"
+                      className="hover:opacity-70 transition-opacity duration-150 leading-none text-[14px]"
                     >
                       ×
                     </button>
@@ -205,28 +191,28 @@ export default function RecipePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted font-sans">No ingredients selected yet.</p>
+              <p className="font-serif text-[14px] italic text-warm-light">Search for an ingredient above to add it.</p>
             )}
           </section>
         )}
 
         {/* API Key tab */}
         {tab === 'api-key' && (
-          <section className="bg-card border border-[#e8d5bc] rounded-lg p-6 mb-6 space-y-5">
-            <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <svg className="w-5 h-5 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <section className="bg-card border border-muted rounded p-6 mb-6 flex flex-col gap-5">
+            <div className="flex items-start gap-3 p-4 bg-green/10 border border-green/20 rounded">
+              <svg className="w-4 h-4 text-green mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
               <div>
-                <p className="text-sm font-sans font-medium text-green-800">Your key stays private</p>
-                <p className="text-xs font-sans text-green-700 mt-1 leading-relaxed">
-                  Your API key is sent directly to the server over HTTPS for one request only. It is <strong>never logged, stored, or shared</strong> — not in a database, not in server memory beyond the single call.
+                <p className="font-sans text-[10px] font-bold tracking-[0.1em] uppercase text-green mb-1">Your key stays private</p>
+                <p className="font-sans text-[12px] text-warm-mid leading-relaxed">
+                  Your API key is sent directly to the server over HTTPS for one request only. It is <strong>never logged, stored, or shared</strong>.
                 </p>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-sans text-dark mb-2" htmlFor="api-key-input">
+              <label className="block font-sans text-[10px] font-semibold tracking-[0.12em] uppercase text-warm-mid mb-1.5" htmlFor="api-key-input">
                 Anthropic API Key
               </label>
               <div className="relative">
@@ -238,12 +224,12 @@ export default function RecipePage() {
                   placeholder="sk-ant-..."
                   autoComplete="off"
                   spellCheck={false}
-                  className="w-full px-4 py-2.5 pr-10 rounded-lg border border-[#e8d5bc] bg-bg font-mono text-sm text-dark placeholder-muted focus:outline-none focus:border-accent"
+                  className="w-full font-mono text-[13px] text-dark bg-bg border-[1.5px] border-muted rounded px-3.5 py-2.5 pr-10 outline-none transition-all duration-150 focus:border-accent focus:shadow-[0_0_0_2px_rgba(196,98,42,0.12)] placeholder:text-warm-light"
                 />
                 <button
                   type="button"
                   onClick={() => setShowKey(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-dark transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-warm-mid hover:text-dark transition-colors duration-150"
                   aria-label={showKey ? 'Hide key' : 'Show key'}
                 >
                   {showKey ? (
@@ -258,7 +244,7 @@ export default function RecipePage() {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-muted font-sans mt-2">
+              <p className="font-sans text-[11px] text-warm-light mt-1.5">
                 Get your key at{' '}
                 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
                   console.anthropic.com
@@ -266,47 +252,45 @@ export default function RecipePage() {
               </p>
             </div>
 
-            <p className="text-xs font-sans text-muted leading-relaxed border-t border-[#e8d5bc] pt-4">
-              Recipe generation uses Claude AI. To keep this app free for everyone, each user provides their own key — no usage costs are passed to the app.
+            <p className="font-sans text-[12px] text-warm-mid leading-relaxed border-t border-muted pt-4">
+              Recipe generation uses Claude AI. To keep this app free for everyone, each user provides their own key.
             </p>
           </section>
         )}
 
+        {/* Primary action */}
         {tab === 'api-key' ? (
           <button
             onClick={() => setTab('ingredients')}
-            className="w-full py-3 rounded-lg font-sans text-base bg-accent text-bg hover:bg-accent/90 cursor-pointer transition-colors"
+            className="w-full font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-dark bg-card border border-muted px-6 py-2.5 rounded cursor-pointer transition-colors duration-150 hover:border-accent hover:text-accent"
           >
-            Save API Key
+            Done
           </button>
         ) : (
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className={[
-              'w-full py-3 rounded-lg font-sans text-base transition-colors flex items-center justify-center gap-2',
-              generating
-                ? 'bg-[#e8d5bc] text-muted cursor-not-allowed'
-                : 'bg-accent text-bg hover:bg-accent/90 cursor-pointer',
-            ].join(' ')}
+            className="w-full font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-bg bg-accent px-6 py-2.5 rounded cursor-pointer transition-colors duration-150 hover:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {generating && (
-              <span aria-hidden="true" className="inline-block w-4 h-4 border-2 border-bg border-t-transparent rounded-full animate-spin" />
+              <span aria-hidden="true" className="inline-block w-3.5 h-3.5 border-2 border-bg/40 border-t-bg rounded-full animate-spin" />
             )}
             {generating ? 'Generating…' : 'Generate Recipe'}
           </button>
         )}
 
+        {/* Error state */}
+        {error && (
+          <p className="font-serif text-[14px] italic text-warm-mid mt-3">{error}</p>
+        )}
+
         {/* Recipe output */}
-        {(recipe || generating) && !error && (
-          <div className="mt-8 bg-card border border-[#e8d5bc] rounded-lg p-6">
+        {(recipe || generating) && (
+          <div className="mt-8 bg-card border border-muted rounded p-7">
             <div className="recipe-prose">
               <ReactMarkdown>{recipe}</ReactMarkdown>
               {generating && (
-                <span
-                  className="inline-block w-px h-4 bg-dark ml-0.5 align-middle"
-                  style={{ animation: 'blink 1s step-end infinite' }}
-                />
+                <span className="inline-block w-px h-4 bg-dark ml-0.5 align-middle blink-cursor" />
               )}
             </div>
           </div>
@@ -315,16 +299,12 @@ export default function RecipePage() {
         {done && !generating && tab === 'ingredients' && (
           <button
             onClick={() => { setRecipe(''); setDone(false); setError(null) }}
-            className="mt-6 w-full py-3 rounded-lg font-sans text-base bg-card border border-[#e8d5bc] text-dark hover:border-accent hover:text-accent transition-colors"
+            className="mt-4 w-full font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-dark bg-card border border-muted px-6 py-2.5 rounded cursor-pointer transition-colors duration-150 hover:border-accent hover:text-accent"
           >
             Generate Another
           </button>
         )}
       </div>
-
-      <style jsx global>{`
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-      `}</style>
-    </div>
+    </>
   )
 }

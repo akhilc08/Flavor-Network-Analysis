@@ -87,7 +87,7 @@ export default function RatePage() {
 
       {/* Result panel */}
       {result && !loading && (
-        <div className="bg-card border border-[#e8d5bc] rounded-xl p-8 flex flex-col gap-4 mb-8">
+        <div className="bg-card border border-muted rounded p-8 flex flex-col gap-4 mb-8">
           <h2 className="font-serif text-[24px] font-normal text-dark">Ratings submitted</h2>
           <p className="font-sans text-[13px] text-warm-mid">
             Thank you — your feedback helps improve the recommendation model.
