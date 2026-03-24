@@ -24,7 +24,7 @@ html { background-color: var(--color-bg); scroll-behavior: smooth; }
 body {
   background-color: var(--color-bg);
   color: var(--color-dark);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

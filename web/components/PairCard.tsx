@@ -10,15 +10,13 @@ interface PairCardProps {
 
 export default function PairCard({ pair, rating, onRate }: PairCardProps) {
   return (
-    <div className="bg-card rounded border border-muted p-6 flex flex-col gap-4">
-      {/* Ingredient names */}
-      <div className="flex flex-col gap-1">
-        <p className="font-serif text-[22px] font-normal text-dark">
-          {pair.ingredient_a}{' '}
-          <span className="text-warm-mid font-sans text-[18px]">+</span>{' '}
-          {pair.ingredient_b}
-        </p>
-      </div>
+    <div className="bg-card border border-muted rounded p-7 flex flex-col gap-5">
+      {/* Ingredient names — display scale */}
+      <h3 className="font-serif font-light text-[32px] text-dark leading-tight">
+        <span className="capitalize">{pair.ingredient_a}</span>
+        <span className="font-sans text-[18px] text-warm-light mx-3 align-middle">+</span>
+        <span className="capitalize">{pair.ingredient_b}</span>
+      </h3>
 
       {/* Molecule tags */}
       {pair.shared_molecules.length > 0 && (

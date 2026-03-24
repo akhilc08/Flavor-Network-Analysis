@@ -94,7 +94,7 @@ export default function SearchPage() {
             </h2>
             <span className="font-sans text-[13px] text-warm-mid">{result.pairings.length} results</span>
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="divide-y divide-muted">
             {result.pairings.map((p) => (
               <ResultCard key={p.name} pairing={p} />
             ))}

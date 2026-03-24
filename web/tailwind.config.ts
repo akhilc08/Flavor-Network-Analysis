@@ -19,8 +19,8 @@ const config: Config = {
         warm: { mid: '#7a5c42', light: '#c4a882' },
       },
       fontFamily: {
-        serif: ['Georgia', 'serif'],
-        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         card: '0 2px 8px rgba(45, 27, 14, 0.05)',

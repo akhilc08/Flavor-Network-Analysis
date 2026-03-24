@@ -12,15 +12,13 @@ function whyItWorks(molecules: string[]): string {
 
 export default function ResultCard({ pairing }: { pairing: Pairing }) {
   return (
-    <div className="group bg-card border border-muted rounded p-7 pb-6 flex flex-col gap-4 shadow-card transition-all duration-150 hover:shadow-card-hover hover:-translate-y-0.5">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="font-serif text-[26px] font-normal text-dark leading-[1.15]">
-          {pairing.name.charAt(0).toUpperCase() + pairing.name.slice(1)}
-        </h3>
-      </div>
+    <div className="py-8 flex flex-col gap-3">
+      {/* Ingredient name — display scale */}
+      <h3 className="font-serif font-light text-[38px] text-dark leading-none capitalize">
+        {pairing.name.charAt(0).toUpperCase() + pairing.name.slice(1)}
+      </h3>
 
-      {/* Score bars */}
+      {/* Score bar */}
       <ScoreBar label="Pairing Score" value={pairing.pairing_score} variant="pairing" />
 
       {/* Molecules */}
@@ -33,7 +31,7 @@ export default function ResultCard({ pairing }: { pairing: Pairing }) {
 
       {/* Why it works */}
       {pairing.shared_molecules.length > 0 && (
-        <p className="font-serif text-[13px] italic text-warm-mid leading-relaxed pt-3 border-t border-muted">
+        <p className="font-serif text-[14px] italic text-warm-mid leading-relaxed">
           {whyItWorks(pairing.shared_molecules)}
         </p>
       )}

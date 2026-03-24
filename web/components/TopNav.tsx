@@ -14,11 +14,11 @@ export default function TopNav() {
 
   return (
     <header className="sticky top-0 z-50 bg-dark border-b border-white/10">
-      <nav className="mx-auto max-w-[1280px] px-12 h-12 flex items-center justify-between">
+      <nav className="mx-auto max-w-[1280px] px-12 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
-          className="font-serif text-base text-bg tracking-tight hover:text-accent transition-colors duration-150"
+          className="font-serif text-[17px] text-bg tracking-tight hover:text-accent transition-colors duration-150"
         >
           FlavorNet
         </Link>
@@ -32,11 +32,11 @@ export default function TopNav() {
                 <Link
                   href={href}
                   className={[
-                    'font-sans text-[10px] font-bold tracking-[0.12em] uppercase',
+                    'font-sans text-[10px] font-bold tracking-[0.14em] uppercase',
                     'transition-colors duration-150 pb-px',
                     active
                       ? 'text-bg border-b-2 border-accent'
-                      : 'text-bg/55 hover:text-bg',
+                      : 'text-bg/50 hover:text-bg',
                   ].join(' ')}
                 >
                   {label}
